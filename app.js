@@ -190,7 +190,10 @@ function revealAnswer(selectedButton, selectedOption) {
   const buttons = [...content.querySelectorAll('.choice')];
   buttons.forEach((button, index) => {
     button.disabled = true;
-    if (state.case.options[index].correct) button.classList.add('is-correct');
+    if (state.case.options[index].correct) {
+      button.classList.add('is-correct');
+      button.setAttribute('aria-label', `正確答案：${state.case.options[index].text}`);
+    }
   });
   selectedButton.classList.add('is-selected');
 
@@ -208,6 +211,8 @@ function revealAnswer(selectedButton, selectedOption) {
   source.href = state.case.guide;
   source.textContent = '查看專案操作指南 ↗';
   answerArea.replaceChildren(kicker, title, copy, source);
+  answerArea.tabIndex = -1;
+  answerArea.focus();
 }
 
 modeButtons.forEach((button) => button.addEventListener('click', () => {
