@@ -97,6 +97,24 @@ input:focus, select:focus { border-color: var(--accent); }
 .bar-fill { height: 100%; background: #418f94; border-radius: inherit; }
 .bar-value { text-align: right; font-variant-numeric: tabular-nums; }
 .demo-disclosure { color: #5b6d72; padding: 4px 0 20px; font-size: 15px; line-height: 1.65; }
+.tab-nav { display: flex; flex-wrap: wrap; gap: 8px; border-bottom: 1px solid var(--line); margin: 0 0 20px; }
+.tab-nav button { border: 0; border-bottom: 3px solid transparent; background: transparent; color: #4c6066; padding: 11px 17px; font-size: 16px; font-weight: 600; }
+.tab-nav button[aria-current="page"] { border-bottom-color: var(--accent); color: var(--accent-dark); }
+.tab-nav button:hover { background: #eaf2f2; }
+.sub-tabs { margin-top: 16px; }
+.table-link { border: 0; background: transparent; color: var(--accent-dark); padding: 6px 0; font-size: 15px; font-weight: 650; text-decoration: underline; }
+.table-link:hover { color: var(--accent); }
+.classification-row { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; margin-top: 18px; }
+.classification-row button { display: grid; gap: 4px; text-align: left; border: 1px solid var(--line); border-radius: 8px; background: #fff; padding: 16px; color: var(--ink); font-size: 16px; }
+.classification-row button:hover { border-color: var(--accent); background: #f4faf9; }
+.classification-row span { color: var(--muted); font-size: 15px; }
+.detail-back { margin: 0 0 12px; color: var(--muted); }
+.detail-heading { display: flex; align-items: baseline; gap: 16px; flex-wrap: wrap; }
+.detail-heading h2 { font-size: 27px; }
+.detail-heading span { color: var(--muted); font-size: 16px; }
+.info-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px; margin-top: 18px; }
+.info-grid span { color: var(--muted); font-size: 15px; }
+.info-grid strong { display: block; color: var(--ink); font-size: 17px; margin-top: 4px; }
 @media (max-width: 860px) {
   .workbench { display: block; }
   .sidebar { display: block; padding: 14px 18px; border-right: 0; border-bottom: 1px solid var(--line); }
@@ -121,4 +139,7 @@ input:focus, select:focus { border-color: var(--accent); }
   .surface { padding: 18px 15px; }
   .form-grid { grid-template-columns: 1fr; }
   .bar-row { grid-template-columns: 90px 1fr 70px; gap: 8px; }
+  .classification-row, .info-grid { grid-template-columns: 1fr; }
+  .tab-nav { flex-wrap: nowrap; overflow-x: auto; }
+  .tab-nav button { flex: 0 0 auto; padding: 10px 12px; }
 }
