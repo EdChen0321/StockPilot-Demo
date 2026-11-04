@@ -1,82 +1,44 @@
 <!doctype html>
 <html lang="zh-Hant">
-  <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="theme-color" content="#092c32">
-    <meta name="description" content="StockPilot 互動情境 Demo：用倉管與營運的例外問題，理解庫存、訂單與 KOL 歸屬的產品判斷。">
-    <title>StockPilot｜例外情境 Demo</title>
-    <link rel="icon" href="favicon.svg" type="image/svg+xml">
-    <link rel="stylesheet" href="style.css">
-    <script src="app.js" defer></script>
-  </head>
-  <body>
-    <a class="skip-link" href="#demo">跳到互動 Demo</a>
-    <div class="page-shell">
-      <header class="site-header">
-        <a class="brand" href="./" aria-label="StockPilot Demo 首頁">
-          <span class="brand-mark" aria-hidden="true"><span></span><span></span><span></span><span></span></span>
-          <span>StockPilot <small>/ DEMO</small></span>
-        </a>
-        <a class="header-link" href="https://github.com/EdChen0321">Ed Chen 的 GitHub <span aria-hidden="true">↗</span></a>
-      </header>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f5f7f7">
+  <meta name="description" content="使用獨立範例資料，操作 StockPilot 倉管與營運流程的公開展示工作台。">
+  <title>StockPilot 操作展示</title>
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="style.css?v=3">
+  <script src="app.js?v=3" defer></script>
+</head>
+<body>
+  <a class="skip-link" href="#main">跳至主要內容</a>
+  <header class="topbar">
+    <a class="brand" href="./" aria-label="StockPilot 操作展示首頁"><span class="brand-icon" aria-hidden="true">▦</span><span>StockPilot <span class="brand-label">操作展示</span></span></a>
+    <div class="topbar-actions"><span class="demo-tag">公開範例工作台</span><a href="https://github.com/EdChen0321" class="profile-link">關於作者 ↗</a></div>
+  </header>
 
-      <main>
-        <div class="intro">
-          <div>
-            <p class="eyebrow"><span class="eyebrow-line"></span> PRODUCT DECISIONS IN THE EDGE CASES</p>
-            <h1>當資料看起來對，<br><em>流程還能走嗎？</em></h1>
-          </div>
-          <p class="intro-copy">六類從實際規則延伸的例外情境。選一個工作視角，判斷下一步，再看系統應守住哪條界線。</p>
-        </div>
+  <div class="workbench">
+    <aside class="sidebar" aria-label="工作台導覽">
+      <div class="project-switch" role="group" aria-label="選擇展示專案">
+        <button type="button" data-mode="warehouse" aria-pressed="true">倉管系統</button>
+        <button type="button" data-mode="operations" aria-pressed="false">營運系統</button>
+      </div>
+      <nav id="module-nav" aria-label="功能選單"></nav>
+      <div class="sidebar-bottom">
+        <button id="reset-demo" class="reset-button" type="button">重設範例資料</button>
+        <a id="repo-link" href="https://github.com/EdChen0321/StockPilot-Warehouse">查看專案原始碼 ↗</a>
+      </div>
+    </aside>
 
-        <section class="demo" id="demo" aria-labelledby="demo-heading">
-          <div class="demo-topline">
-            <span class="demo-index">01 / 互動情境</span>
-            <span class="demo-status"><span class="status-dot" aria-hidden="true"></span> 範例資料 · 瀏覽器內運作</span>
-          </div>
-
-          <div class="demo-body">
-            <aside class="mode-panel" aria-label="選擇專案視角">
-              <p class="panel-label">選擇視角</p>
-              <div class="mode-switch" role="group" aria-label="專案視角">
-                <button class="mode-button is-active" type="button" data-mode="warehouse" aria-pressed="true">
-                  <span class="mode-number">01</span><span class="mode-title">倉管系統</span><span class="mode-subtitle">入庫 / 櫃位 / 出貨</span>
-                </button>
-                <button class="mode-button" type="button" data-mode="operations" aria-pressed="false">
-                  <span class="mode-number">02</span><span class="mode-title">營運系統</span><span class="mode-subtitle">訂單 / 銷售 / KOL</span>
-                </button>
-              </div>
-              <div class="mode-note">
-                <span class="note-rule" aria-hidden="true"></span>
-                <p>兩個獨立專案，<br>各自處理自己的資料。</p>
-              </div>
-            </aside>
-
-            <div class="challenge-panel">
-              <div class="challenge-heading">
-                <p class="panel-label" id="demo-heading">對抗式情境 <span id="case-count">01 / 03</span></p>
-                <button class="next-button" id="next-case" type="button">換一個情境 <span aria-hidden="true">↗</span></button>
-              </div>
-              <div id="case-content" aria-live="polite"></div>
-              <div class="answer-area" id="answer-area" aria-live="polite"></div>
-            </div>
-          </div>
-        </section>
-
-        <div class="project-footer" aria-label="專案連結與 Demo 說明">
-          <div class="footer-explain">
-            <span class="small-caps">ABOUT THIS DEMO</span>
-            <p>情境由公開操作規則整理並組合成刁鑽案例；答案展示產品判斷，並非連線到正式系統的即時操作或 AI 即時回答。</p>
-          </div>
-          <div class="project-links">
-            <a href="https://github.com/EdChen0321/StockPilot-Warehouse">倉管專案與操作指南 <span aria-hidden="true">↗</span></a>
-            <a href="https://github.com/EdChen0321/StockPilot-Operations">營運專案與操作指南 <span aria-hidden="true">↗</span></a>
-          </div>
-        </div>
-      </main>
-
-      <footer class="site-footer"><span>STOCKPILOT / DEMO</span><span>Built to explain the decisions behind the workflow.</span></footer>
-    </div>
-  </body>
+    <main id="main" tabindex="-1">
+      <div class="workspace-head">
+        <div><p class="breadcrumb" id="breadcrumb"></p><h1 id="page-title"></h1><p class="page-description" id="page-description"></p></div>
+        <div id="primary-action"></div>
+      </div>
+      <div id="message" class="message" role="status" aria-live="polite" hidden></div>
+      <div id="view"></div>
+      <div class="demo-disclosure">此頁使用獨立範例資料，在瀏覽器內模擬主要操作。資料不會寫入兩個專案的系統；完整功能與目前限制以各專案 README 為準。</div>
+    </main>
+  </div>
+</body>
 </html>

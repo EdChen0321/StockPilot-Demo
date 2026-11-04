@@ -1,231 +1,357 @@
-// The demo deliberately uses generated example data in the browser only.
-// It does not call either StockPilot project or read a database.
-const guides = {
-  warehouse: 'https://github.com/EdChen0321/StockPilot-Warehouse/blob/main/docs/inventory-shipping.md',
-  orders: 'https://github.com/EdChen0321/StockPilot-Operations/blob/main/docs/orders-sales.md',
-  kol: 'https://github.com/EdChen0321/StockPilot-Operations/blob/main/docs/kol-analysis.md',
-};
-
-const integer = (min, max) => Math.floor(Math.random() * (max - min + 1)) + min;
-const shuffle = (items) => {
-  const result = [...items];
-  for (let i = result.length - 1; i > 0; i -= 1) {
-    const j = integer(0, i);
-    [result[i], result[j]] = [result[j], result[i]];
-  }
-  return result;
-};
-
-const templates = {
+const STORAGE_KEY = 'stockpilot-demo-v3';
+const productCatalogue = {
   warehouse: [
-    () => {
-      const total = integer(9, 16);
-      const unplaced = integer(2, 4);
-      const reserved = integer(1, 2);
-      const eligible = total - unplaced - reserved;
-      return {
-        tag: '庫存可用量',
-        title: '庫存有貨，出貨單卻不能全數配貨。',
-        facts: [['實體在庫', `${total} 件`], ['未配櫃、未占用', `${unplaced} 件`], ['已配櫃、已占用', `${reserved} 件`]],
-        question: '其餘商品都在符合條件的可出貨櫃位。這張新出貨單目前最多能配多少件？',
-        options: [
-          { text: `${total} 件；實體在庫就是可出貨量`, correct: false },
-          { text: `${eligible} 件；先排除未配櫃與已占用`, correct: true },
-          { text: `${total - unplaced} 件；已占用也可以再配`, correct: false },
-        ],
-        answer: `最多 ${eligible} 件。實體在庫、可出貨量與已占用量是不同概念；配貨前必須核對櫃位、品質、包裝和占用狀態。`,
-        guide: guides.warehouse,
-      };
-    },
-    () => {
-      const total = integer(5, 12);
-      return {
-        tag: '櫃位資格',
-        title: '商品已配櫃，櫃位卻被停用。',
-        facts: [['實體在庫', `${total} 件`], ['櫃位狀態', '停用'], ['出貨單', '等待配貨']],
-        question: '倉管人員應如何處理這批商品？',
-        options: [
-          { text: '既然已配櫃，就直接完成出貨', correct: false },
-          { text: '先查停用原因並處理櫃位資格，再配貨', correct: true },
-          { text: '重新入庫一次，讓數量增加', correct: false },
-        ],
-        answer: '停用的櫃位不具出貨資格。先查停用原因，安排符合條件的可出貨櫃位，核對品質與包裝後再判斷可用量；不能用重複入庫繞過限制。',
-        guide: guides.warehouse,
-      };
-    },
-    () => ({
-      tag: '出貨單狀態',
-      title: '新建了一張出貨單，但尚未加入商品。',
-      facts: [['出貨單號', `WH-${integer(2001, 9999)}`], ['商品明細', '0 筆'], ['目前狀態', '待處理']],
-      question: '可以直接把這張出貨單標記為完成嗎？',
-      options: [
-        { text: '可以，單號存在就代表已完成出貨', correct: false },
-        { text: '不行；先加入明細並完成配貨、揀貨與出貨', correct: true },
-        { text: '可以，但先在營運系統建立同號訂單', correct: false },
-      ],
-      answer: '空出貨單不能完成出貨。倉管端自行建立出貨單號，不依賴營運系統；實際出貨仍要有商品明細與作業紀錄。',
-      guide: guides.warehouse,
-    }),
+    { sku: 'WH-001', name: '摺疊收納箱' },
+    { sku: 'WH-002', name: '保溫水壺' },
   ],
   operations: [
-    () => {
-      const count = integer(18, 45);
-      return {
-        tag: '匯入確認',
-        title: '檔案預檢成功，銷售總覽卻沒有增加。',
-        facts: [['預覽訂單', `${count} 筆`], ['預檢結果', '通過'], ['批次狀態', '尚未確認']],
-        question: '現在應該如何解讀銷售總覽？',
-        options: [
-          { text: `立即計入這 ${count} 筆訂單`, correct: false },
-          { text: '核對預覽並確認匯入後，才計入有效銷售', correct: true },
-          { text: '先同步倉管庫存，報表才會更新', correct: false },
-        ],
-        answer: '預檢只提供核對，不會把訂單計入銷售。確認匯入後，才到訂單列表與銷售報表核對結果。',
-        guide: guides.orders,
-      };
-    },
-    () => {
-      const valid = integer(780, 1980);
-      const cancelled = integer(420, 920);
-      const shipping = integer(60, 120);
-      return {
-        tag: '銷售口徑',
-        title: '訂單裡有取消項目，還有另列運費。',
-        facts: [['有效商品折後金額', `NT$ ${valid.toLocaleString('en-US')}`], ['取消訂單商品', `NT$ ${cancelled.toLocaleString('en-US')}`], ['另列運費', `NT$ ${shipping}`]],
-        question: '銷售查詢中的有效商品金額應是多少？',
-        options: [
-          { text: `NT$ ${(valid + cancelled + shipping).toLocaleString('en-US')}`, correct: false },
-          { text: `NT$ ${valid.toLocaleString('en-US')}`, correct: true },
-          { text: `NT$ ${(valid + cancelled).toLocaleString('en-US')}`, correct: false },
-        ],
-        answer: '取消訂單不計入有效銷售；商品銷售金額採折後金額，不含另列運費。銷售報表也不代表倉管端的實際出貨量。',
-        guide: guides.orders,
-      };
-    },
-    () => ({
-      tag: 'KOL 歸屬',
-      title: '訂單有來源名稱，但沒有 UTM medium。',
-      facts: [['訂單來源', '社群活動'], ['utm_medium', '未填'], ['KOL 設定', '已有多位']],
-      question: '這筆訂單應歸到哪位 KOL？',
-      options: [
-        { text: '依來源名稱猜測最可能的 KOL', correct: false },
-        { text: '先列為未歸屬，回查來源資料', correct: true },
-        { text: '平均分配給所有 KOL', correct: false },
-      ],
-      answer: '沒有可核對的 utm_medium，就不推定 KOL 歸屬。未填、未知與已匹配標記應分開查看，避免污染成效統計。',
-      guide: guides.kol,
-    }),
+    { sku: 'OP-001', name: '帆布托特包' },
+    { sku: 'OP-002', name: '玻璃隨行杯' },
   ],
 };
+const pageInfo = {
+  warehouse: {
+    inventory: ['庫存總覽', '核對實體在庫、未配櫃與目前可出貨件數。'],
+    receipts: ['入庫管理', '建立入庫單並確認收貨，商品才會進入實體庫存。'],
+    locations: ['櫃位管理', '把已入庫但未配櫃的商品放到可出貨櫃位。'],
+    shipments: ['出貨管理', '建立出貨單、加入商品、配貨，再完成出貨。'],
+  },
+  operations: {
+    orders: ['接收訂單', '建立銷售訂單，核對來源、商品與訂單狀態。'],
+    sales: ['銷售總覽', '依有效訂單查看商品銷售金額與品項數量。'],
+    kol: ['KOL 分析', '預覽獨立的 KOL 範例批次，確認後再核對 UTM 歸屬。'],
+  },
+};
+const repoUrls = {
+  warehouse: 'https://github.com/EdChen0321/StockPilot-Warehouse',
+  operations: 'https://github.com/EdChen0321/StockPilot-Operations',
+};
 
-const state = { mode: 'warehouse', case: null, answered: false, seen: { warehouse: [], operations: [] } };
-const content = document.getElementById('case-content');
-const answerArea = document.getElementById('answer-area');
-const caseCount = document.getElementById('case-count');
-const modeButtons = [...document.querySelectorAll('[data-mode]')];
-
-function drawCase() {
-  const seen = state.seen[state.mode];
-  if (seen.length === templates[state.mode].length) seen.length = 0;
-  const available = templates[state.mode].map((_, index) => index).filter((index) => !seen.includes(index));
-  const index = available[integer(0, available.length - 1)];
-  seen.push(index);
-  state.case = templates[state.mode][index]();
-  state.case.options = shuffle(state.case.options);
-  state.answered = false;
-  caseCount.textContent = `${String(seen.length).padStart(2, '0')} / 03`;
-  renderCase();
+function freshData() {
+  return {
+    warehouse: {
+      products: [
+        { sku: 'WH-001', available: 6, unplaced: 4, reserved: 0 },
+        { sku: 'WH-002', available: 12, unplaced: 0, reserved: 0 },
+      ],
+      receipts: [{ number: 'RC-1001', source: '示範供應商', sku: 'WH-001', qty: 10, status: 'confirmed' }],
+      shipments: [],
+    },
+    operations: {
+      orders: [
+        { number: 'OR-1001', source: '官方網站', sku: 'OP-001', qty: 2, price: 390, utm: 'kol_amy', date: '2026-11-02', status: 'active' },
+        { number: 'OR-1002', source: '市集', sku: 'OP-002', qty: 1, price: 560, utm: '', date: '2026-11-03', status: 'active' },
+        { number: 'OR-1003', source: '官方網站', sku: 'OP-001', qty: 1, price: 390, utm: 'kol_ben', date: '2026-11-03', status: 'cancelled' },
+      ],
+      kolBatch: { status: 'none', rows: [
+        { number: 'K-1001', product: '帆布托特包', amount: 780, utm: 'kol_amy', status: 'active' },
+        { number: 'K-1002', product: '玻璃隨行杯', amount: 560, utm: '', status: 'active' },
+        { number: 'K-1003', product: '帆布托特包', amount: 390, utm: 'kol_ben', status: 'cancelled' },
+        { number: 'K-1004', product: '帆布托特包', amount: 420, utm: 'kol_new', status: 'active' },
+      ] },
+    },
+  };
 }
 
-function renderCase() {
-  const current = state.case;
-  content.replaceChildren();
-  const header = document.createElement('div');
-  header.className = 'case-header';
-  header.innerHTML = '<span class="case-kicker"></span><h2 class="case-title"></h2><p class="case-meta">DEMO DATA / 部分情境會變動範例條件</p>';
-  header.querySelector('.case-kicker').textContent = current.tag;
-  header.querySelector('.case-title').textContent = current.title;
-  content.append(header);
+function loadData() {
+  try {
+    const saved = JSON.parse(localStorage.getItem(STORAGE_KEY));
+    if (saved?.warehouse?.products && saved?.operations?.orders && saved?.operations?.kolBatch) return saved;
+  } catch { /* A damaged local demo state can safely start over. */ }
+  return freshData();
+}
 
-  const facts = document.createElement('div');
-  facts.className = 'facts';
-  for (const [label, value] of current.facts) {
-    const fact = document.createElement('div');
-    fact.className = 'fact';
-    fact.innerHTML = '<span class="fact-label"></span><strong class="fact-value"></strong>';
-    fact.querySelector('.fact-label').textContent = label;
-    fact.querySelector('.fact-value').textContent = value;
-    facts.append(fact);
+let data = loadData();
+let ui = { mode: 'warehouse', page: 'inventory', form: '', shipmentIndex: -1, search: '', source: '', status: '', start: '', end: '' };
+const $ = (selector) => document.querySelector(selector);
+const escapeHtml = (value) => String(value ?? '').replace(/[&<>"']/g, (character) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[character]);
+const money = (value) => `NT$ ${Number(value).toLocaleString('zh-TW')}`;
+const productName = (mode, sku) => productCatalogue[mode].find((item) => item.sku === sku)?.name ?? sku;
+const physical = (item) => item.available + item.unplaced + item.reserved;
+const badge = (text, tone = '') => `<span class="badge ${tone}">${escapeHtml(text)}</span>`;
+const productOptions = (mode, selected = '') => productCatalogue[mode].map((item) => `<option value="${item.sku}" ${item.sku === selected ? 'selected' : ''}>${item.name} · ${item.sku}</option>`).join('');
+const today = () => new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Taipei' });
+const save = () => localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+
+function message(text, type = '') {
+  const target = $('#message');
+  target.textContent = text;
+  target.className = `message ${type}`;
+  target.hidden = false;
+}
+
+function go(page) {
+  ui.page = page;
+  ui.form = '';
+  ui.search = '';
+  ui.source = '';
+  ui.status = '';
+  render();
+  $('#main').focus();
+}
+
+function renderNav() {
+  const pages = Object.entries(pageInfo[ui.mode]);
+  $('#module-nav').innerHTML = `<p class="nav-group-title">${ui.mode === 'warehouse' ? '倉管作業' : '營運作業'}</p><div class="nav-list">${pages.map(([key, [name]]) => `<button type="button" data-go="${key}" ${ui.page === key ? 'aria-current="page"' : ''}>${name}</button>`).join('')}</div>`;
+  document.querySelectorAll('[data-mode]').forEach((button) => button.setAttribute('aria-pressed', String(button.dataset.mode === ui.mode)));
+  $('#repo-link').href = repoUrls[ui.mode];
+}
+
+function render() {
+  renderNav();
+  const [title, description] = pageInfo[ui.mode][ui.page];
+  $('#breadcrumb').textContent = `${ui.mode === 'warehouse' ? '倉管系統' : '營運系統'} / ${title}`;
+  $('#page-title').textContent = title;
+  $('#page-description').textContent = description;
+  $('#message').hidden = true;
+  const renderers = {
+    inventory: renderInventory,
+    receipts: renderReceipts,
+    locations: renderLocations,
+    shipments: renderShipments,
+    orders: renderOrders,
+    sales: renderSales,
+    kol: renderKol,
+  };
+  $('#view').innerHTML = renderers[ui.page]();
+  const actions = {
+    inventory: '<button class="primary" type="button" data-go="receipts">建立入庫單</button>',
+    receipts: '<button class="primary" type="button" data-form="receipt">建立入庫單</button>',
+    locations: '<button class="primary" type="button" data-focus="putaway-form">開始配櫃</button>',
+    shipments: '<button class="primary" type="button" data-form="shipment">建立出貨單</button>',
+    orders: '<button class="primary" type="button" data-form="order">新增訂單</button>',
+    sales: '<button class="secondary" type="button" data-go="orders">查看訂單</button>',
+    kol: '<button class="secondary" type="button" data-go="orders">查看訂單</button>',
+  };
+  $('#primary-action').innerHTML = actions[ui.page];
+}
+
+function stat(label, value, unit = '', accent = false) {
+  return `<div class="stat ${accent ? 'accent' : ''}"><span class="stat-label">${label}</span><strong>${value}<span>${unit}</span></strong></div>`;
+}
+
+function renderInventory() {
+  const products = data.warehouse.products;
+  const totals = products.reduce((sum, item) => ({ physical: sum.physical + physical(item), available: sum.available + item.available, unplaced: sum.unplaced + item.unplaced }), { physical: 0, available: 0, unplaced: 0 });
+  return `<div class="stat-row">${stat('實體在庫', totals.physical, '件')}${stat('目前可出貨', totals.available, '件', true)}${stat('待配櫃', totals.unplaced, '件')}</div>
+    <section class="surface"><div class="surface-header"><h2>商品庫存</h2><button class="secondary" type="button" data-go="locations">查看櫃位</button></div>
+    <div class="table-wrap"><table><thead><tr><th>商品 / SKU</th><th class="numeric">實體在庫</th><th class="numeric">待配櫃</th><th class="numeric">已配貨</th><th class="numeric">可出貨</th></tr></thead><tbody>
+    ${products.map((item) => `<tr><td><strong>${productName('warehouse', item.sku)}</strong><span class="subtext">${item.sku}</span></td><td class="numeric">${physical(item)}</td><td class="numeric">${item.unplaced}</td><td class="numeric">${item.reserved}</td><td class="numeric"><strong>${item.available}</strong></td></tr>`).join('')}
+    </tbody></table></div><p class="form-hint">已入庫的商品須完成配櫃，且所在櫃位符合出貨條件，才能用於配貨。</p></section>`;
+}
+
+function renderReceipts() {
+  return `${ui.form === 'receipt' ? `<section class="surface"><h2>建立入庫單</h2><form id="receipt-form"><div class="form-grid">
+    <label>入庫單號<input name="number" required maxlength="40" placeholder="例如 RC-1002"></label>
+    <label>進貨來源<input name="source" required maxlength="80" placeholder="例如 示範供應商"></label>
+    <label>商品<select name="sku">${productOptions('warehouse')}</select></label>
+    <label>實收件數<input name="qty" type="number" min="1" max="999" value="5" required></label></div>
+    <div class="form-actions"><button class="primary" type="submit">保存入庫單</button><button class="secondary" type="button" data-close-form>取消</button></div>
+    <p class="form-hint">保存後仍是草稿；按「確認入庫」才會增加實體在庫。</p></form></section>` : ''}
+    <section class="surface"><div class="surface-header"><h2>入庫單</h2></div><div class="table-wrap"><table><thead><tr><th>入庫單號</th><th>進貨來源</th><th>商品</th><th class="numeric">實收件數</th><th>入庫狀態</th><th>操作</th></tr></thead><tbody>
+    ${data.warehouse.receipts.map((item, index) => `<tr><td><strong>${escapeHtml(item.number)}</strong></td><td>${escapeHtml(item.source)}</td><td>${productName('warehouse', item.sku)}<span class="subtext">${item.sku}</span></td><td class="numeric">${item.qty}</td><td>${item.status === 'confirmed' ? badge('已入庫') : badge('草稿', 'pending')}</td><td><div class="row-actions">${item.status === 'draft' ? `<button type="button" data-action="confirm-receipt" data-index="${index}">確認入庫</button>` : '<span class="subtext">等待或已完成配櫃</span>'}</div></td></tr>`).join('')}
+    </tbody></table></div></section>`;
+}
+
+function renderLocations() {
+  return `<section class="surface"><div class="surface-header"><h2>櫃位</h2></div><div class="table-wrap"><table><thead><tr><th>櫃位</th><th>狀態</th><th>出貨設定</th></tr></thead><tbody>
+    <tr><td><strong>A01 · 一般品區</strong></td><td>${badge('已啟用')}</td><td>允許出貨</td></tr>
+    <tr><td><strong>B01 · 暫停使用區</strong></td><td>${badge('已停用', 'neutral')}</td><td>不可出貨</td></tr>
+    </tbody></table></div></section>
+    <section class="surface" id="putaway-form"><div class="surface-header"><h2>配櫃</h2></div><form id="putaway-form-inner"><div class="form-grid">
+    <label>商品<select name="sku">${productOptions('warehouse')}</select></label>
+    <label>配櫃件數<input name="qty" type="number" min="1" max="999" value="1" required></label>
+    <label>目的櫃位<select name="location"><option value="A01">A01 · 一般品區（可出貨）</option><option value="B01">B01 · 暫停使用區</option></select></label>
+    </div><div class="form-actions"><button class="primary" type="submit">確認配櫃</button></div><p class="form-hint">只有已入庫、尚未配櫃的商品可配入啟用且允許出貨的櫃位。</p></form></section>
+    <section class="surface"><h2>待配櫃商品</h2><div class="table-wrap"><table><thead><tr><th>商品 / SKU</th><th class="numeric">待配櫃件數</th><th class="numeric">目前可出貨</th></tr></thead><tbody>
+    ${data.warehouse.products.map((item) => `<tr><td>${productName('warehouse', item.sku)}<span class="subtext">${item.sku}</span></td><td class="numeric">${item.unplaced}</td><td class="numeric">${item.available}</td></tr>`).join('')}
+    </tbody></table></div></section>`;
+}
+
+function shipmentStatus(item) {
+  return item.status === 'complete' ? badge('已完成') : item.status === 'allocated' ? badge('已配貨') : item.status === 'preparing' ? badge('準備中', 'pending') : badge('待加入商品', 'neutral');
+}
+
+function renderShipments() {
+  const lineShipment = data.warehouse.shipments[ui.shipmentIndex];
+  const addLine = ui.form === 'shipment-line' ? `<section class="surface"><h2>${lineShipment?.status === 'preparing' ? '修改出貨商品' : '加入出貨商品'}</h2><p class="inline-note">出貨單 ${escapeHtml(lineShipment?.number)}</p><form id="shipment-line-form"><div class="form-grid"><label>商品<select name="sku">${productOptions('warehouse', lineShipment?.sku)}</select></label><label>出貨件數<input name="qty" type="number" min="1" max="999" value="${lineShipment?.qty || 1}" required></label></div><div class="form-actions"><button class="primary" type="submit">保存商品明細</button><button class="secondary" type="button" data-close-form>取消</button></div></form></section>` : '';
+  const newShipment = ui.form === 'shipment' ? `<section class="surface"><h2>建立出貨單</h2><form id="shipment-form"><div class="form-grid"><label>出貨單號<input name="number" required maxlength="40" placeholder="例如 SH-1001"></label><label>出貨通路<input name="channel" required maxlength="80" placeholder="例如 網路商店"></label></div><div class="form-actions"><button class="primary" type="submit">保存出貨單</button><button class="secondary" type="button" data-close-form>取消</button></div><p class="form-hint">出貨單由倉管端自行建立。保存後再加入商品、配貨並完成出貨。</p></form></section>` : '';
+  return `${newShipment}${addLine}<section class="surface"><div class="surface-header"><h2>出貨單</h2></div><div class="table-wrap"><table><thead><tr><th>出貨單號</th><th>通路</th><th>商品 / 件數</th><th>狀態</th><th>操作</th></tr></thead><tbody>
+    ${data.warehouse.shipments.length ? data.warehouse.shipments.map((item, index) => `<tr><td><strong>${escapeHtml(item.number)}</strong></td><td>${escapeHtml(item.channel)}</td><td>${item.sku ? `${productName('warehouse', item.sku)} · ${item.qty} 件` : '尚未加入商品'}</td><td>${shipmentStatus(item)}</td><td><div class="row-actions">${item.status === 'empty' ? `<button type="button" data-action="add-line" data-index="${index}">加入商品</button>` : item.status === 'preparing' ? `<button type="button" data-action="edit-line" data-index="${index}">修改商品</button><button type="button" data-action="allocate" data-index="${index}">配貨</button>` : item.status === 'allocated' ? `<button type="button" data-action="complete" data-index="${index}">完成出貨</button>` : '<span class="subtext">已完成</span>'}</div></td></tr>`).join('') : '<tr><td colspan="5" class="empty">尚無出貨單。按「建立出貨單」開始操作。</td></tr>'}
+    </tbody></table></div></section>`;
+}
+
+function orderStatus(item) { return item.status === 'active' ? badge('有效') : badge('已取消', 'neutral'); }
+function renderOrders() {
+  const keyword = ui.search.trim().toLowerCase();
+  const orders = data.operations.orders.map((item, index) => ({ ...item, index })).filter((item) => (!keyword || `${item.number} ${item.sku} ${productName('operations', item.sku)}`.toLowerCase().includes(keyword)) && (!ui.source || item.source === ui.source) && (!ui.status || item.status === ui.status));
+  return `${ui.form === 'order' ? `<section class="surface"><h2>新增訂單</h2><form id="order-form"><div class="form-grid">
+    <label>訂單來源<select name="source"><option>官方網站</option><option>市集</option><option>快閃活動</option></select></label>
+    <label>訂單編號<input name="number" required maxlength="40" placeholder="例如 OR-1004"></label>
+    <label>下單日期<input name="date" type="date" value="${today()}" required></label>
+    <label>商品<select name="sku">${productOptions('operations')}</select></label>
+    <label>數量<input name="qty" type="number" min="1" max="999" value="1" required></label>
+    <label>單件商品折後金額（TWD）<input name="price" type="number" min="0" max="999999" value="390" required></label>
+    <label>UTM medium（選填）<input name="utm" maxlength="80" placeholder="例如 kol_amy；未知請留白"></label>
+    </div><div class="form-actions"><button class="primary" type="submit">保存訂單</button><button class="secondary" type="button" data-close-form>取消</button></div><p class="form-hint">這裡只建立營運系統的訂單，不會自動產生倉管出貨單。</p></form></section>` : ''}
+    <section class="surface"><div class="surface-header"><h2>已接收訂單</h2></div>
+    <form id="order-search-form" class="filter-row"><label>搜尋訂單<input name="search" type="search" value="${escapeHtml(ui.search)}" placeholder="訂單編號、商品或 SKU"></label><label>來源<select name="source"><option value="">全部來源</option><option ${ui.source === '官方網站' ? 'selected' : ''}>官方網站</option><option ${ui.source === '市集' ? 'selected' : ''}>市集</option><option ${ui.source === '快閃活動' ? 'selected' : ''}>快閃活動</option></select></label><label>狀態<select name="status"><option value="">全部狀態</option><option value="active" ${ui.status === 'active' ? 'selected' : ''}>有效</option><option value="cancelled" ${ui.status === 'cancelled' ? 'selected' : ''}>已取消</option></select></label><button class="secondary" type="submit">查詢訂單</button></form>
+    <div class="table-wrap"><table><thead><tr><th>來源 / 訂單</th><th>商品</th><th class="numeric">商品金額</th><th>UTM medium</th><th>狀態</th><th>操作</th></tr></thead><tbody>
+    ${orders.length ? orders.map((item) => `<tr><td><strong>${escapeHtml(item.number)}</strong><span class="subtext">${escapeHtml(item.source)} · ${escapeHtml(item.date)}</span></td><td>${productName('operations', item.sku)} × ${item.qty}<span class="subtext">${item.sku}</span></td><td class="numeric">${money(item.qty * item.price)}</td><td>${item.utm ? escapeHtml(item.utm) : '未填'}</td><td>${orderStatus(item)}</td><td><div class="row-actions">${item.status === 'active' ? `<button type="button" data-action="cancel-order" data-index="${item.index}">取消訂單</button>` : '<span class="subtext">保留紀錄</span>'}</div></td></tr>`).join('') : '<tr><td colspan="6" class="empty">找不到符合條件的訂單。</td></tr>'}
+    </tbody></table></div></section>`;
+}
+
+function filteredSalesOrders() {
+  return data.operations.orders.filter((item) => item.status === 'active' && (!ui.start || item.date >= ui.start) && (!ui.end || item.date <= ui.end));
+}
+function renderSales() {
+  const orders = filteredSalesOrders();
+  const total = orders.reduce((sum, item) => sum + item.qty * item.price, 0);
+  const quantity = orders.reduce((sum, item) => sum + item.qty, 0);
+  const byProduct = productCatalogue.operations.map((product) => ({ ...product, amount: orders.filter((item) => item.sku === product.sku).reduce((sum, item) => sum + item.qty * item.price, 0) }));
+  const max = Math.max(1, ...byProduct.map((item) => item.amount));
+  return `<section class="surface"><form id="sales-filter-form" class="filter-row"><label>開始日期<input name="start" type="date" value="${ui.start}"></label><label>結束日期<input name="end" type="date" value="${ui.end}"></label><button class="secondary" type="submit">查詢銷售</button></form><p class="inline-note">依下單日期統計有效訂單；商品金額不含另列稅與運費。</p></section>
+    <div class="stat-row">${stat('商品銷售金額', money(total), '', true)}${stat('有效訂單', orders.length, '筆')}${stat('銷售品項', quantity, '件')}</div>
+    <section class="surface"><h2>商品銷售</h2>${byProduct.map((item) => `<div class="bar-row"><strong>${item.name}</strong><div class="bar-track"><div class="bar-fill" style="width:${Math.round(item.amount / max * 100)}%"></div></div><span class="bar-value">${money(item.amount)}</span></div>`).join('')}</section>
+    <section class="surface"><h2>有效訂單明細</h2><div class="table-wrap"><table><thead><tr><th>訂單</th><th>下單日期</th><th>商品</th><th class="numeric">件數</th><th class="numeric">商品金額</th></tr></thead><tbody>
+    ${orders.length ? orders.map((item) => `<tr><td>${escapeHtml(item.number)}<span class="subtext">${escapeHtml(item.source)}</span></td><td>${escapeHtml(item.date)}</td><td>${productName('operations', item.sku)}</td><td class="numeric">${item.qty}</td><td class="numeric">${money(item.qty * item.price)}</td></tr>`).join('') : '<tr><td colspan="5" class="empty">目前期間沒有有效訂單。</td></tr>'}
+    </tbody></table></div></section>`;
+}
+
+function attribution(item) {
+  if (item.status === 'cancelled') return ['已排除', 'neutral'];
+  if (!item.utm) return ['未歸屬', 'neutral'];
+  if (item.utm === 'kol_amy') return ['Amy', ''];
+  if (item.utm === 'kol_ben') return ['Ben', ''];
+  return ['待核對', 'pending'];
+}
+function renderKol() {
+  const batch = data.operations.kolBatch;
+  if (batch.status === 'none') return `<section class="surface"><h2>KOL 訂單範例批次</h2><p class="inline-note">原專案使用 KOL 訂單 Excel：先上傳預覽，核對排除與 UTM，再確認匯入。這裡提供一份內建合成範例供操作。</p><div class="form-actions"><button class="primary" type="button" data-action="preview-kol">載入範例批次並預覽</button></div></section>`;
+  const rows = batch.rows;
+  const matched = rows.filter((item) => item.status === 'active' && ['kol_amy', 'kol_ben'].includes(item.utm));
+  const unknown = rows.filter((item) => item.status === 'active' && item.utm && !['kol_amy', 'kol_ben'].includes(item.utm));
+  const missing = rows.filter((item) => item.status === 'active' && !item.utm);
+  return `<section class="surface"><div class="surface-header"><h2>範例批次 ${batch.status === 'preview' ? badge('待確認', 'pending') : badge('已確認')}</h2>${batch.status === 'preview' ? '<button class="primary" type="button" data-action="confirm-kol">確認匯入</button>' : ''}</div><p class="inline-note">${batch.status === 'preview' ? '目前僅為預覽，尚未計入 KOL 統計。請先核對排除資料與 UTM。' : '此批次已確認，以下統計只來自這份 KOL 範例批次，未與一般銷售訂單加總。'}</p></section>
+    ${batch.status === 'confirmed' ? `<div class="stat-row">${stat('已匹配 KOL', matched.length, '筆', true)}${stat('UTM 未填', missing.length, '筆')}${stat('標記待核對', unknown.length, '筆')}</div>` : ''}
+    <section class="surface"><div class="surface-header"><h2>${batch.status === 'preview' ? '匯入預覽' : 'KOL 訂單明細'}</h2></div><div class="table-wrap"><table><thead><tr><th>來源訂單</th><th>商品</th><th>UTM medium</th><th>核對結果</th><th class="numeric">商品金額</th></tr></thead><tbody>
+    ${rows.map((item) => `<tr><td><strong>${item.number}</strong></td><td>${item.product}</td><td>${item.utm || '未填'}</td><td>${badge(...attribution(item))}</td><td class="numeric">${money(item.amount)}</td></tr>`).join('')}
+    </tbody></table></div><p class="form-hint">已取消訂單排除；未填與未知 UTM 分開核對。示範對照：kol_amy → Amy、kol_ben → Ben。</p></section>`;
+}
+
+function formValues(form) { return Object.fromEntries(new FormData(form).entries()); }
+function positiveInteger(value) { const number = Number(value); return Number.isInteger(number) && number > 0 && number <= 999 ? number : null; }
+
+function submitForm(event) {
+  const form = event.target;
+  if (!(form instanceof HTMLFormElement)) return;
+  event.preventDefault();
+  const values = formValues(form);
+  if (form.id === 'receipt-form') {
+    const qty = positiveInteger(values.qty);
+    const number = values.number.trim();
+    if (!qty || !number) return message('請填入有效的單號與實收件數。', 'error');
+    if (data.warehouse.receipts.some((item) => item.number === number)) return message('入庫單號已存在，請核對原單。', 'error');
+    data.warehouse.receipts.unshift({ number, source: values.source.trim(), sku: values.sku, qty, status: 'draft' });
+    ui.form = '';
+    save(); render(); message(`入庫單 ${number} 已保存為草稿，請確認入庫。`);
+  } else if (form.id === 'putaway-form-inner') {
+    const qty = positiveInteger(values.qty);
+    const product = data.warehouse.products.find((item) => item.sku === values.sku);
+    if (!qty || qty > product.unplaced) return message(`配櫃件數超過待配櫃數量（${product.unplaced} 件）。`, 'error');
+    if (values.location !== 'A01') return message('B01 已停用，不能作為可出貨櫃位。', 'error');
+    product.unplaced -= qty; product.available += qty;
+    save(); render(); message(`${productName('warehouse', product.sku)} 已配入 A01，新增 ${qty} 件可出貨量。`);
+  } else if (form.id === 'shipment-form') {
+    const number = values.number.trim();
+    if (!number) return message('請填寫出貨單號。', 'error');
+    if (data.warehouse.shipments.some((item) => item.number === number)) return message('出貨單號已存在，請搜尋原單。', 'error');
+    data.warehouse.shipments.unshift({ number, channel: values.channel.trim(), sku: '', qty: 0, status: 'empty' });
+    ui.form = '';
+    save(); render(); message(`出貨單 ${number} 已建立，請加入商品。`);
+  } else if (form.id === 'shipment-line-form') {
+    const qty = positiveInteger(values.qty);
+    const shipment = data.warehouse.shipments[ui.shipmentIndex];
+    if (!shipment || !['empty', 'preparing'].includes(shipment.status) || !qty) return message('請填寫有效的商品與出貨件數。', 'error');
+    shipment.sku = values.sku; shipment.qty = qty; shipment.status = 'preparing';
+    ui.form = '';
+    save(); render(); message(`${shipment.number} 已加入商品，請核對可出貨量後配貨。`);
+  } else if (form.id === 'order-form') {
+    const qty = positiveInteger(values.qty);
+    const price = Number(values.price);
+    const number = values.number.trim();
+    if (!number || !qty || !Number.isFinite(price) || price < 0 || price > 999999) return message('請核對訂單編號、數量與商品金額。', 'error');
+    if (data.operations.orders.some((item) => item.number === number)) return message('訂單編號已存在，請搜尋原單。', 'error');
+    data.operations.orders.unshift({ number, source: values.source, sku: values.sku, qty, price, utm: values.utm.trim(), date: values.date, status: 'active' });
+    ui.form = '';
+    save(); render(); message(`訂單 ${number} 已保存，可到銷售總覽核對。`);
+  } else if (form.id === 'order-search-form') {
+    ui.search = values.search; ui.source = values.source; ui.status = values.status; render();
+  } else if (form.id === 'sales-filter-form') {
+    if (values.start && values.end && values.start > values.end) return message('開始日期不能晚於結束日期。', 'error');
+    ui.start = values.start; ui.end = values.end; render();
   }
-  content.append(facts);
-
-  const questionLabel = document.createElement('p');
-  questionLabel.className = 'question-label';
-  questionLabel.textContent = 'YOUR CALL / 你會怎麼判斷？';
-  const question = document.createElement('p');
-  question.className = 'case-question';
-  question.textContent = current.question;
-  content.append(questionLabel, question);
-
-  const choices = document.createElement('div');
-  choices.className = 'choices';
-  choices.setAttribute('role', 'group');
-  choices.setAttribute('aria-label', '選擇判斷');
-  current.options.forEach((option, index) => {
-    const button = document.createElement('button');
-    button.className = 'choice';
-    button.type = 'button';
-    button.innerHTML = `<span class="choice-letter">${String.fromCharCode(65 + index)}.</span><span class="choice-text"></span>`;
-    button.querySelector('.choice-text').textContent = option.text;
-    button.addEventListener('click', () => revealAnswer(button, option));
-    choices.append(button);
-  });
-  content.append(choices);
-  answerArea.replaceChildren();
 }
 
-function revealAnswer(selectedButton, selectedOption) {
-  if (state.answered) return;
-  state.answered = true;
-  const buttons = [...content.querySelectorAll('.choice')];
-  buttons.forEach((button, index) => {
-    button.disabled = true;
-    if (state.case.options[index].correct) {
-      button.classList.add('is-correct');
-      button.setAttribute('aria-label', `正確答案：${state.case.options[index].text}`);
+document.addEventListener('submit', submitForm);
+document.addEventListener('click', (event) => {
+  const mode = event.target.closest('[data-mode]');
+  if (mode) {
+    if (mode.dataset.mode === ui.mode) return;
+    ui.mode = mode.dataset.mode;
+    ui.page = ui.mode === 'warehouse' ? 'inventory' : 'orders';
+    ui.form = ''; render(); $('#main').focus(); return;
+  }
+  const navigation = event.target.closest('[data-go]');
+  if (navigation) return go(navigation.dataset.go);
+  const showForm = event.target.closest('[data-form]');
+  if (showForm) { ui.form = showForm.dataset.form; render(); $('#view input')?.focus(); return; }
+  if (event.target.closest('[data-close-form]')) { ui.form = ''; render(); return; }
+  const focus = event.target.closest('[data-focus]');
+  if (focus) return $(`#${focus.dataset.focus} input`)?.focus();
+  const action = event.target.closest('[data-action]');
+  if (action) {
+    if (action.dataset.action === 'preview-kol') {
+      data.operations.kolBatch.status = 'preview';
+      save(); render(); message('範例批次已預覽，確認前不計入 KOL 統計。'); return;
     }
-  });
-  selectedButton.classList.add('is-selected');
+    if (action.dataset.action === 'confirm-kol') {
+      data.operations.kolBatch.status = 'confirmed';
+      save(); render(); message('KOL 範例批次已確認，可核對統計與明細。'); return;
+    }
+    const index = Number(action.dataset.index);
+    if (action.dataset.action === 'confirm-receipt') {
+      const receipt = data.warehouse.receipts[index];
+      if (!receipt || receipt.status !== 'draft') return;
+      receipt.status = 'confirmed';
+      data.warehouse.products.find((item) => item.sku === receipt.sku).unplaced += receipt.qty;
+      save(); render(); message(`${receipt.number} 已確認入庫，${receipt.qty} 件商品待配櫃。`);
+    } else if (['add-line', 'edit-line'].includes(action.dataset.action)) {
+      ui.shipmentIndex = index; ui.form = 'shipment-line'; render(); $('#view select')?.focus();
+    } else if (action.dataset.action === 'allocate') {
+      const shipment = data.warehouse.shipments[index];
+      const product = data.warehouse.products.find((item) => item.sku === shipment.sku);
+      if (product.available < shipment.qty) return message(`目前可出貨 ${product.available} 件，無法配貨 ${shipment.qty} 件。請先核對庫存與櫃位。`, 'error');
+      product.available -= shipment.qty; product.reserved += shipment.qty; shipment.status = 'allocated';
+      save(); render(); message(`${shipment.number} 已配貨 ${shipment.qty} 件，可完成出貨。`);
+    } else if (action.dataset.action === 'complete') {
+      const shipment = data.warehouse.shipments[index];
+      const product = data.warehouse.products.find((item) => item.sku === shipment.sku);
+      product.reserved -= shipment.qty; shipment.status = 'complete';
+      save(); render(); message(`${shipment.number} 已完成出貨，實體在庫已扣除 ${shipment.qty} 件。`);
+    } else if (action.dataset.action === 'cancel-order') {
+      const order = data.operations.orders[index];
+      if (!order || order.status !== 'active') return;
+      order.status = 'cancelled';
+      save(); render(); message(`${order.number} 已取消並保留紀錄，不再計入有效銷售。`);
+    }
+    return;
+  }
+  if (event.target.closest('#reset-demo')) {
+    if (!window.confirm('要清除這個瀏覽器中的 Demo 操作，恢復初始範例資料嗎？')) return;
+    data = freshData(); save(); ui = { mode: 'warehouse', page: 'inventory', form: '', shipmentIndex: -1, search: '', source: '', status: '', start: '', end: '' };
+    render(); message('範例資料已重設。');
+  }
+});
 
-  const kicker = document.createElement('p');
-  kicker.className = 'answer-kicker';
-  kicker.textContent = selectedOption.correct ? '判斷符合規則' : '再看一眼規則';
-  const title = document.createElement('p');
-  title.className = 'answer-title';
-  title.textContent = selectedOption.correct ? '你守住了關鍵界線。' : '正確選項已標出。';
-  const copy = document.createElement('p');
-  copy.className = 'answer-copy';
-  copy.textContent = state.case.answer;
-  const source = document.createElement('a');
-  source.className = 'source-link';
-  source.href = state.case.guide;
-  source.textContent = '查看專案操作指南 ↗';
-  answerArea.replaceChildren(kicker, title, copy, source);
-  answerArea.tabIndex = -1;
-  answerArea.focus();
-}
-
-modeButtons.forEach((button) => button.addEventListener('click', () => {
-  const nextMode = button.dataset.mode;
-  if (nextMode === state.mode) return;
-  state.mode = nextMode;
-  modeButtons.forEach((item) => {
-    const active = item.dataset.mode === nextMode;
-    item.classList.toggle('is-active', active);
-    item.setAttribute('aria-pressed', String(active));
-  });
-  drawCase();
-}));
-
-document.getElementById('next-case').addEventListener('click', drawCase);
-drawCase();
+render();
