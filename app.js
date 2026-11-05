@@ -18,10 +18,11 @@ const pageInfo = {
     shippingReport: ['出貨總覽', '依實際完成出貨日期核對出貨件數與單據。'],
   },
   operations: {
+    kol: ['KOL 分析', '查看每位夥伴賣了哪些商品，並從商品追查訂單與歸屬。'],
     orders: ['接收訂單', '建立銷售訂單，核對來源、商品與訂單狀態。'],
     orderImport: ['匯入銷售訂單', '先預檢範例批次，確認後才會納入訂單與銷售。'],
     sales: ['銷售總覽', '依有效訂單查看商品銷售金額與品項數量。'],
-    kol: ['KOL 分析', '查看合作夥伴專屬頁、商品與訂單表現，再核對匯入批次。'],
+
   },
 };
 const repoUrls = {
@@ -147,7 +148,7 @@ function render() {
     orders: '<button class="primary" type="button" data-form="order">新增訂單</button>',
     orderImport: '<button class="secondary" type="button" data-go="orders">查看訂單</button>',
     sales: '<button class="secondary" type="button" data-go="orders">查看訂單</button>',
-    kol: '<button class="primary" type="button" data-kol-tab="imports">Excel 訂單匯入</button>',
+    kol: '',
   };
   $('#primary-action').innerHTML = actions[ui.page];
 }
@@ -266,14 +267,15 @@ function attribution(item) {
   if (group === 'unattributed') return ['待確認歸屬', 'pending'];
   return [data.operations.kols.find((kol) => kol.id === group).name, ''];
 }
-const kolRows = () => data.operations.kolBatch.status === 'confirmed' ? data.operations.kolBatch.rows : [];
+const baselineKolRows = () => data.operations.kolHistory || (data.operations.kolHistory = freshData().operations.kolBatch.rows.map((r, i) => ({...r, number:r.number.replace('K-', 'H-'), ...(i === 5 ? {product:'玻璃隨行杯',sku:'OP-002',qty:1,amount:520} : {})})));
+const kolRows = () => [...baselineKolRows(), ...(data.operations.kolBatch.status === 'confirmed' ? data.operations.kolBatch.rows : [])];
 const activeKolRows = (id, rows = kolRows()) => rows.filter((item) => item.status === 'active' && kolGroup(item) === id && (!ui.kolStart || item.date >= ui.kolStart) && (!ui.kolEnd || item.date <= ui.kolEnd));
 const kolAmount = (rows) => rows.reduce((sum, item) => sum + item.amount, 0);
 function kolTabs() {
   return `<nav class="tab-nav" aria-label="KOL 分析功能">${[['list', 'KOL 名單'], ['statistics', '整體表現統計'], ['imports', 'Excel 訂單匯入']].map(([id, label]) => `<button type="button" data-kol-tab="${id}" ${ui.kolTab === id || ui.kolTab === 'detail' && id === 'list' ? 'aria-current="page"' : ''}>${label}</button>`).join('')}</nav>`;
 }
 function kolFilter() {
-  return `<section class="surface"><form id="kol-filter-form" class="filter-row"><label>開始日期<input name="start" type="date" value="${ui.kolStart}"></label><label>結束日期<input name="end" type="date" value="${ui.kolEnd}"></label><button class="secondary" type="submit">查詢期間</button></form><p class="inline-note">目前條件：${ui.kolStart || '不限'} ～ ${ui.kolEnd || '不限'}。僅統計已確認批次中的有效訂單。</p></section>`;
+  return `<section class="surface"><form id="kol-filter-form" class="filter-row"><label>開始日期<input name="start" type="date" value="${ui.kolStart}"></label><label>結束日期<input name="end" type="date" value="${ui.kolEnd}"></label><button class="secondary" type="submit">查詢期間</button></form><p class="inline-note">目前條件：${ui.kolStart || '不限'} ～ ${ui.kolEnd || '不限'}。統計已確認的合成訂單；取消單不計業績。</p></section>`;
 }
 function kolOrdersTable(rows) {
   return `<div class="table-wrap"><table><thead><tr><th>訂單 / 日期</th><th>來源</th><th>商品</th><th>UTM medium</th><th>狀態</th><th class="numeric">訂單金額</th></tr></thead><tbody>${rows.length ? rows.map((item) => `<tr><td><strong>${escapeHtml(item.number)}</strong><span class="subtext">${item.date}</span></td><td>${escapeHtml(item.source)}</td><td>${escapeHtml(item.product)} × ${item.qty}</td><td>${escapeHtml(item.utm || '未填')}</td><td>${badge(...attribution(item))}</td><td class="numeric">${money(item.amount)}</td></tr>`).join('') : '<tr><td colspan="6" class="empty">目前條件沒有訂單。</td></tr>'}</tbody></table></div>`;
@@ -285,16 +287,25 @@ function renderKolList() {
 function renderKolStatistics() {
   const rows = kolRows().filter((item) => item.status === 'active' && (!ui.kolStart || item.date >= ui.kolStart) && (!ui.kolEnd || item.date <= ui.kolEnd));
   const groups = [...data.operations.kols.map((kol) => [kol.id, kol.name]), ['general', '一般訂單'], ['unattributed', '待確認歸屬']];
-  return `${kolFilter()}<div class="stat-row">${stat('有效訂單', rows.length, '筆', true)}${stat('訂單總金額', money(kolAmount(rows)))}${stat('平均訂單金額', rows.length ? money(Math.round(kolAmount(rows) / rows.length)) : '—')}</div><section class="surface"><h2>夥伴與分類表現</h2><p class="inline-note">KOL、一般訂單與待確認歸屬分列；此處只計 KOL 範例批次，不與營運銷售總覽相加。</p><div class="table-wrap"><table><thead><tr><th>夥伴 / 分類</th><th class="numeric">有效訂單</th><th class="numeric">訂單總金額</th><th class="numeric">平均訂單金額</th><th>操作</th></tr></thead><tbody>${groups.map(([id, name]) => { const groupRows = activeKolRows(id); return `<tr><td><strong>${escapeHtml(name)}</strong></td><td class="numeric">${groupRows.length}</td><td class="numeric">${money(kolAmount(groupRows))}</td><td class="numeric">${groupRows.length ? money(Math.round(kolAmount(groupRows) / groupRows.length)) : '—'}</td><td><button type="button" class="table-link" data-kol-id="${id}">查看明細</button></td></tr>`; }).join('')}</tbody></table></div></section>`;
+  return `${kolFilter()}<div class="stat-row">${stat('有效訂單', rows.length, '筆', true)}${stat('訂單總金額', money(kolAmount(rows)))}${stat('平均訂單金額', rows.length ? money(Math.round(kolAmount(rows) / rows.length)) : '—')}</div><section class="surface"><h2>夥伴與分類表現</h2><p class="inline-note">KOL、一般訂單與待確認歸屬分列；此處使用獨立 KOL 合成資料，不與營運銷售總覽相加。</p><div class="table-wrap"><table><thead><tr><th>夥伴 / 分類</th><th class="numeric">有效訂單</th><th class="numeric">訂單總金額</th><th class="numeric">平均訂單金額</th><th>操作</th></tr></thead><tbody>${groups.map(([id, name]) => { const groupRows = activeKolRows(id); return `<tr><td><strong>${escapeHtml(name)}</strong></td><td class="numeric">${groupRows.length}</td><td class="numeric">${money(kolAmount(groupRows))}</td><td class="numeric">${groupRows.length ? money(Math.round(kolAmount(groupRows) / groupRows.length)) : '—'}</td><td><button type="button" class="table-link" data-kol-id="${id}">查看明細</button></td></tr>`; }).join('')}</tbody></table></div></section>`;
+}
+function kolProducts(rows) {
+  return [...new Set(rows.map(r => r.sku))].map(sku => {
+    const selected = rows.filter(r => r.sku === sku);
+    return {sku,name:selected[0].product,qty:selected.reduce((n,r)=>n+r.qty,0),count:new Set(selected.map(r=>r.source+'|'+r.number)).size};
+  }).sort((a,b)=>b.qty-a.qty || a.sku.localeCompare(b.sku));
+}
+function renderKolWorkbench() {
+  if (ui.form === 'kol') return renderKolList();
+  return `<section class="surface"><div class="surface-header"><h2>KOL 合作檔案</h2><button class="secondary" data-form="kol" type="button">新增 KOL</button></div><p>選擇一位夥伴，查看賣出的商品與原始訂單。</p>${kolFilter()}<div class="partner-list">${data.operations.kols.map(k=>{const rows=activeKolRows(k.id),products=kolProducts(rows),top=products[0];return `<article class="partner-row"><div><h3>${escapeHtml(k.name)}</h3><p>${escapeHtml(k.platform)} · ${escapeHtml(k.campaign)}</p></div><div><span>主要銷售商品</span><strong>${top?escapeHtml(top.name):'目前無有效訂單'}</strong><p>${top?`${top.qty} 件 · ${top.count} 筆訂單`: '可先核對 UTM 與合作日期'}</p></div><div><span>有效訂單 / 訂單金額</span><strong>${rows.length} 筆 / ${money(kolAmount(rows))}</strong></div><button class="primary" data-kol-id="${escapeHtml(k.id)}" type="button">查看 ${escapeHtml(k.name)} 的商品</button></article>`}).join('')}</div></section><section class="surface"><h2>核對訂單歸屬</h2><p>有標記卻未匹配的訂單，可查明後加入 KOL 的 UTM；不以姓名猜測歸屬。</p><div class="classification-row">${[['unattributed','待確認歸屬'],['general','一般訂單']].map(([id,name])=>`<button type="button" data-kol-id="${id}"><strong>${name}</strong><span>${activeKolRows(id).length} 筆有效訂單</span></button>`).join('')}</div></section>`;
 }
 function renderKolDetail() {
-  const id = ui.kolId;
-  const kol = data.operations.kols.find((item) => item.id === id);
-  if (!kol && !['general', 'unattributed'].includes(id)) return renderKolList();
-  const name = kol?.name || (id === 'general' ? '一般訂單' : '待確認歸屬');
-  const rows = activeKolRows(id);
-  const products = [...new Set(rows.map((item) => item.sku))].map((sku) => { const items = rows.filter((item) => item.sku === sku); return { name: items[0].product, sku, qty: items.reduce((sum, item) => sum + item.qty, 0), count: items.length, amount: kolAmount(items) }; });
-  return `<div class="detail-back"><button type="button" class="table-link" data-kol-tab="list">← KOL 名單</button><span> / ${escapeHtml(name)}</span></div><div class="detail-heading"><h2>${escapeHtml(name)}</h2>${kol ? `<span>${escapeHtml(kol.platform)} · ${escapeHtml(kol.campaign)}</span>` : '<span>系統固定分類，不能修改</span>'}</div><nav class="tab-nav sub-tabs" aria-label="KOL 專屬頁資料"><button type="button" data-kol-sub="orders" ${ui.kolSub !== 'products' ? 'aria-current="page"' : ''}>訂單概況與明細</button><button type="button" data-kol-sub="products" ${ui.kolSub === 'products' ? 'aria-current="page"' : ''}>商品銷售統計</button></nav>${kol ? `<section class="surface"><h2>KOL 資訊</h2><div class="info-grid"><span>活動名稱<strong>${escapeHtml(kol.campaign)}</strong></span><span>平台<strong>${escapeHtml(kol.platform)}</strong></span><span>合作開始<strong>${kol.started}</strong></span><span>UTM medium<strong>${kol.utms.map(escapeHtml).join('、')}</strong></span></div>${kol.note ? `<p class="form-hint">備註：${escapeHtml(kol.note)}</p>` : ''}</section>` : `<section class="surface"><p class="inline-note">${id === 'general' ? '沒有 UTM 的訂單固定歸入一般訂單。' : '有 UTM 但未匹配 KOL，或早於合作開始的訂單，列為待確認歸屬。'}</p></section>`}${kolFilter()}<div class="stat-row">${stat('有效訂單', rows.length, '筆', true)}${stat('訂單總金額', money(kolAmount(rows)))}${stat('平均訂單金額', rows.length ? money(Math.round(kolAmount(rows) / rows.length)) : '—')}</div>${ui.kolSub === 'products' ? `<section class="surface"><h2>商品銷售統計</h2><div class="table-wrap"><table><thead><tr><th>商品 / SKU</th><th class="numeric">數量</th><th class="numeric">有效訂單</th><th class="numeric">商品明細金額</th></tr></thead><tbody>${products.length ? products.map((item) => `<tr><td>${escapeHtml(item.name)}<span class="subtext">${escapeHtml(item.sku)}</span></td><td class="numeric">${item.qty}</td><td class="numeric">${item.count}</td><td class="numeric">${money(item.amount)}</td></tr>`).join('') : '<tr><td colspan="4" class="empty">目前期間沒有商品資料。</td></tr>'}</tbody></table></div></section>` : `<section class="surface"><h2>相關訂單</h2>${kolOrdersTable(rows)}</section>`}`;
+ const id=ui.kolId,kol=data.operations.kols.find(k=>k.id===id);
+ if(!kol&&!['general','unattributed'].includes(id))return renderKolWorkbench();
+ const name=kol?.name||(id==='general'?'一般訂單':'待確認歸屬'),rows=activeKolRows(id),products=kolProducts(rows);
+ const visible=ui.kolProduct?rows.filter(r=>r.sku===ui.kolProduct):rows;
+ const pending = id==='unattributed'?`<section class="surface"><h2>將 UTM 歸到合作夥伴</h2><form id="kol-assign-form" class="filter-row"><label>待核對的 UTM<select name="utm">${[...new Set(rows.map(r=>r.utm))].map(t=>`<option>${escapeHtml(t)}</option>`).join('')}</select></label><label>對應 KOL<select name="kol">${data.operations.kols.map(k=>`<option value="${escapeHtml(k.id)}">${escapeHtml(k.name)}</option>`).join('')}</select></label><button class="primary" type="submit" ${rows.length?'':'disabled'}>保存 UTM 歸屬</button></form><p>早於合作開始的訂單仍會留在待確認；已由其他夥伴使用的 UTM 不可重複設定。</p></section>`:'';
+ return `<div class="detail-back"><button class="table-link" data-kol-tab="list" type="button">← KOL 合作檔案</button></div><div class="detail-heading"><h2>${escapeHtml(name)}</h2><span>${kol?escapeHtml(kol.platform+' · '+kol.campaign):'系統固定分類'}</span></div>${kol?`<details class="surface kol-settings"><summary>合作資料與 UTM</summary><p>合作開始：${kol.started}</p><p>UTM：${kol.utms.map(escapeHtml).join('、')}</p><p>${escapeHtml(kol.note)}</p></details>`:''}${kolFilter()}<div class="stat-row">${stat('有效訂單',rows.length,'筆',true)}${stat('訂單總金額',money(kolAmount(rows)))}${stat('售出商品',rows.reduce((n,r)=>n+r.qty,0),'件')}</div>${pending}<section class="surface"><h2>${kol?escapeHtml(name)+' 賣了哪些商品':'這些訂單買了什麼'}</h2><p>依售出件數排序。商品僅統計件數，不分攤整張訂單金額。</p><div class="product-ranking">${products.length?products.map((p,i)=>`<div class="product-rank"><span class="rank-number">${i+1}</span><div><strong>${escapeHtml(p.name)}</strong><span class="subtext">${escapeHtml(p.sku)}</span><div class="bar-track"><div class="bar-fill" style="width:${p.qty/products[0].qty*100}%"></div></div></div><strong>${p.qty} 件</strong><button class="table-link" data-kol-product="${escapeHtml(p.sku)}" type="button">查看 ${p.count} 筆訂單</button></div>`).join(''):'<p class="empty">目前期間沒有有效商品資料，請調整日期或核對歸屬。</p>'}</div></section><section class="surface"><div class="surface-header"><h2>${ui.kolProduct?escapeHtml(products.find(p=>p.sku===ui.kolProduct)?.name||ui.kolProduct)+' 的訂單':'相關有效訂單'}</h2>${ui.kolProduct?'<button class="table-link" data-kol-product="" type="button">顯示全部商品訂單</button>':''}</div>${kolOrdersTable(visible)}</section>`;
 }
 function renderKolImports() {
   const batch = data.operations.kolBatch;
@@ -306,7 +317,7 @@ function renderKolImports() {
   return `<section class="surface"><div class="surface-header"><h2>範例批次 ${batch.status === 'preview' ? badge('待確認', 'pending') : badge('已確認')}</h2>${batch.status === 'preview' ? '<button class="primary" type="button" data-action="confirm-kol">確認匯入</button>' : ''}</div><p class="inline-note">${batch.status === 'preview' ? '目前僅為預覽，尚未計入 KOL 統計。請先核對排除資料與 UTM。' : '此批次已確認，以下統計只來自這份 KOL 範例批次，未與一般銷售訂單加總。'}</p></section>${batch.status === 'confirmed' ? `<div class="stat-row">${stat('已匹配 KOL', matched.length, '筆', true)}${stat('一般訂單', missing.length, '筆')}${stat('待確認歸屬', unknown.length, '筆')}</div>` : ''}<section class="surface"><h2>${batch.status === 'preview' ? '匯入預覽' : 'KOL 訂單明細'}</h2>${kolOrdersTable(rows)}<p class="form-hint">已取消訂單排除；未填與未知 UTM 分開核對。合作開始前的訂單列入待確認歸屬。</p></section>`;
 }
 function renderKol() {
-  return `${kolTabs()}${ui.kolTab === 'statistics' ? renderKolStatistics() : ui.kolTab === 'imports' ? renderKolImports() : ui.kolTab === 'detail' ? renderKolDetail() : renderKolList()}`;
+  return `${kolTabs()}${ui.kolTab === 'statistics' ? renderKolStatistics() : ui.kolTab === 'imports' ? renderKolImports() : ui.kolTab === 'detail' ? renderKolDetail() : renderKolWorkbench()}`;
 }
 
 function formValues(form) { return Object.fromEntries(new FormData(form).entries()); }
@@ -366,6 +377,12 @@ function submitForm(event) {
   } else if (form.id === 'kol-filter-form') {
     if (values.start && values.end && values.start > values.end) return message('開始日期不能晚於結束日期。', 'error');
     ui.kolStart = values.start; ui.kolEnd = values.end; render();
+  } else if (form.id === 'kol-assign-form') {
+    const kol=data.operations.kols.find(k=>k.id===values.kol), tag=values.utm;
+    if(!kol||!tag)return message('請選擇 UTM 與合作夥伴。','error');
+    if(data.operations.kols.some(k=>k.id!==kol.id&&k.utms.includes(tag)))return message('此 UTM 已屬於其他 KOL，請核對原設定。','error');
+    if(!kol.utms.includes(tag))kol.utms.push(tag);
+    save();render();message('UTM 已保存，訂單依合作開始日期重新歸屬。');
   } else if (form.id === 'kol-form') {
     const name = values.name.trim();
     const utm = values.utm.trim();
@@ -384,15 +401,17 @@ document.addEventListener('click', (event) => {
   if (mode) {
     if (mode.dataset.mode === ui.mode) return;
     ui.mode = mode.dataset.mode;
-    ui.page = ui.mode === 'warehouse' ? 'inventory' : 'orders';
+    ui.page = ui.mode === 'warehouse' ? 'inventory' : 'kol';
     ui.form = ''; render(); $('#main').focus(); return;
   }
   const navigation = event.target.closest('[data-go]');
   if (navigation) return go(navigation.dataset.go);
+  const productLink=event.target.closest('[data-kol-product]');
+  if(productLink){ui.kolProduct=productLink.dataset.kolProduct;render();document.querySelector('#view section:last-child')?.scrollIntoView({block:'start'});return;}
   const kolTab = event.target.closest('[data-kol-tab]');
   if (kolTab) { ui.kolTab = kolTab.dataset.kolTab; ui.form = ''; render(); $('#main').focus(); return; }
   const kolDetail = event.target.closest('[data-kol-id]');
-  if (kolDetail) { ui.kolId = kolDetail.dataset.kolId; ui.kolTab = 'detail'; ui.kolSub = 'orders'; render(); $('#main').focus(); return; }
+  if (kolDetail) { ui.kolProduct = ''; ui.kolId = kolDetail.dataset.kolId; ui.kolTab = 'detail'; ui.kolSub = 'orders'; render(); $('#main').focus(); return; }
   const kolSub = event.target.closest('[data-kol-sub]');
   if (kolSub) { ui.kolSub = kolSub.dataset.kolSub; render(); $('#main').focus(); return; }
   const showForm = event.target.closest('[data-form]');
@@ -462,4 +481,5 @@ document.addEventListener('click', (event) => {
   }
 });
 
+if(new URLSearchParams(location.search).get('mode')==='operations'){ui.mode='operations';ui.page='kol';}
 render();

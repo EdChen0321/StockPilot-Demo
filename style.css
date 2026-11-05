@@ -143,3 +143,16 @@ input:focus, select:focus { border-color: var(--accent); }
   .tab-nav { flex-wrap: nowrap; overflow-x: auto; }
   .tab-nav button { flex: 0 0 auto; padding: 10px 12px; }
 }
+.partner-row { display:grid; grid-template-columns:1fr 1.2fr 1.2fr auto; gap:24px; align-items:center; padding:24px 0; border-top:1px solid var(--line); }
+.partner-row h3 { font-size:23px; margin:0; }
+.partner-row strong { display:block; margin:8px 0; font-size:18px; }
+.partner-row p { margin:6px 0; color:var(--muted); }
+.partner-row span { color:var(--muted); }
+.product-rank { display:grid; grid-template-columns:28px 1fr 70px 130px; gap:18px; align-items:center; padding:20px 0; border-top:1px solid var(--line); }
+.product-rank .bar-track { margin-top:12px; max-width:500px; }
+.rank-number { color:var(--muted); font-size:22px; }
+.kol-settings { margin-top:18px; }
+.kol-settings summary { cursor:pointer; font-weight:600; }
+.partner-list, .product-ranking { font-size:16px; }
+@media(max-width:1100px) { .partner-row { grid-template-columns:1fr 1fr; } }
+@media(max-width:600px) { .partner-row { grid-template-columns:1fr; gap:12px; } .product-rank { grid-template-columns:24px 1fr 60px; gap:10px; } .product-rank button { grid-column:2 / -1; text-align:left; } }
