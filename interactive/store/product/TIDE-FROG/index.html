@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta name="referrer" content="no-referrer">
+  <script src="/StockPilot-Demo/interactive/runtime/client.js" defer></script>
+  <link rel="stylesheet" href="/StockPilot-Demo/interactive/runtime/demo.css">
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#252622">
+  <link rel="icon" type="image/webp" href="/StockPilot-Demo/interactive/assets/swimbait.webp">
+  <title>Tide & Tackle | Lure Shop</title>
+  <link rel="stylesheet" href="/StockPilot-Demo/interactive/static/portfolio/portfolio.css">
+  <link rel="stylesheet" href="/StockPilot-Demo/interactive/static/portfolio/admin-light.css">
+  <link rel="stylesheet" href="/StockPilot-Demo/interactive/static/portfolio/storefront.css">
+  <script src="/StockPilot-Demo/interactive/static/portfolio/kol-management.js" defer></script>
+  <script src="/StockPilot-Demo/interactive/static/portfolio/pickup-ui.js" defer></script>
+  <script src="/StockPilot-Demo/interactive/static/portfolio/portfolio.js" defer></script>
+  <script src="/StockPilot-Demo/interactive/static/portfolio/dashboard.js" defer></script>
+  <link rel="stylesheet" href="/StockPilot-Demo/interactive/static/portfolio/operations-dashboard.css">
+  <script src="/StockPilot-Demo/interactive/static/portfolio/order-detail.js" defer></script>
+  <link rel="stylesheet" href="/StockPilot-Demo/interactive/static/portfolio/order-detail.css">
+<link rel="stylesheet" href="/StockPilot-Demo/interactive/static/portfolio/theme-a.css"></head>
+<body data-demo-role="shop" data-demo-path="/product/TIDE-FROG" data-role="shop" data-page="product" data-shop-route="product/TIDE-FROG">
+  <a class="skip-link" href="#main-content">Skip to content</a><div class="demo-notice">Demonstration store · Use fictional details · No payments or deliveries</div><header class="site-header">
+    <a class="brand" href="/" aria-label="Tide &amp; Tackle home"><span class="brand-mark">T<span class="brand-dot">.</span></span><span class="brand-name">Tide &amp; Tackle<small>路亞選物</small></span></a>
+    <nav aria-label="主要導覽"><a href="/shop" data-store-nav="products">全部商品</a><a href="/shop?style=TIDE-SWIMBAIT" data-store-nav="hard">硬餌</a><a href="/shop?style=TIDE-FROG" data-store-nav="surface">水面餌</a><a href="/shop?style=TIDE-WORM" data-store-nav="soft">軟餌</a><a href="/#track-form" data-store-nav="tracking">訂單查詢</a><a href="/cart" id="cart-toggle" data-store-nav="cart" aria-controls="cart-title" aria-expanded="false">購物袋 <span id="header-cart-count">0</span></a></nav>
+  </header>
+
+  <main id="main-content">
+    <section class="app-section product-section view-panel" id="product" aria-labelledby="product-title">
+      <div class="product-bar"><nav class="product-breadcrumb" aria-label="目前位置"><a href="/shop" data-product-i18n="back">全部商品</a><span aria-hidden="true">/</span><span id="product-crumb">商品</span></nav><div class="language-switch" role="group" aria-label="Storefront language / 購物前台語言"><button type="button" data-store-lang="zh" aria-pressed="true">中文</button><button type="button" data-store-lang="en" aria-pressed="false">English</button></div></div>
+      <div class="product-page-layout">
+        <div class="product-gallery"><div class="product-main-image"><img id="product-main-image" src="" alt="" fetchpriority="high" width="1200" height="900"></div><div id="product-thumbnails" class="product-thumbnails" role="group" aria-label="商品圖片"></div></div>
+        <div class="product-purchase"><p class="eyebrow dark" id="product-category"></p><h1 id="product-title"></h1><p id="product-summary" class="product-summary"></p><div class="product-price"><strong id="product-price"></strong><span id="product-unit"></span></div><p id="product-stock" class="product-stock"></p><div class="purchase-actions"><div><label for="product-quantity" data-product-i18n="quantity">數量</label><div class="product-quantity"><button type="button" data-quantity-step="-1" aria-label="減少數量">−</button><input id="product-quantity" type="number" min="1" max="5" value="1" inputmode="numeric"><button type="button" data-quantity-step="1" aria-label="增加數量">＋</button></div></div><button id="product-add" type="button" class="button primary full" data-product-i18n="addToCart">加入購物車</button></div><p id="product-message" class="message" role="status" aria-live="polite"></p><div class="product-service"><div><strong data-product-i18n="demoLabel">配送選擇</strong><span data-product-i18n="demoHelp">下單時選擇宅配或超商取貨</span></div><div><strong data-product-i18n="stockLabel">可出貨庫存</strong><span data-product-i18n="stockHelp">依目前倉管可用件數更新</span></div></div></div>
+      </div>
+      <div class="product-editorial"><div class="product-story-image"><img id="product-detail-image" src="" alt="" loading="lazy" width="1200" height="900"></div><div class="product-story-copy"><p class="eyebrow dark" data-product-i18n="aboutLabel">商品介紹</p><h2 id="product-story-title"></h2><p id="product-story"></p><ul class="product-feature-list" id="product-feature-list"></ul><div class="product-facts"><h3 data-product-i18n="specTitle">商品資訊</h3><dl id="product-facts"></dl><p data-product-i18n="disclaimer">模擬商品與圖片，僅供示範。</p></div></div></div>
+      <div class="product-more"><div><p class="eyebrow dark" data-product-i18n="moreLabel">CONTINUE / 繼續選購</p><h2 data-product-i18n="moreTitle">再看看其他餌型</h2></div><div id="product-more-list"></div></div>
+    </section>
+
+    </main>
+  <footer><span>Tide & Tackle / Lure shop</span><span>Payment and shipping are simulated. No charge or delivery.</span></footer>
+<div class="pages-demo-bar" aria-label="展示入口"><a href="/StockPilot-Demo/interactive/store/">購物前台</a><a href="/StockPilot-Demo/interactive/operations/">營運</a><a href="/StockPilot-Demo/interactive/warehouse/#shipping">倉管出貨</a><span data-demo-status role="status">正在載入展示資料…</span></div></body>
+</html>

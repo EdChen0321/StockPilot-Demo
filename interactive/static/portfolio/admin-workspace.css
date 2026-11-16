@@ -1,0 +1,23 @@
+/* Original forms and tables stay intact; only their outer presentation is aligned. */
+:root { --ink:#19343a; --muted:#52666a; --bg:#f8faf9; --surface:#fff; --line:#d5e1df; --accent:#126970; --soft:#e7f1ef; }
+[data-admin-workspace] .topbar, [data-admin-workspace] #workspace-navigation { display: none !important; }
+[data-admin-workspace] .layout { display: block; min-height: calc(100vh - 64px); margin-left: 232px; }
+[data-admin-workspace] #main { max-width: none; padding: 38px clamp(22px, 3vw, 48px) 72px; background: var(--admin-bg); }
+[data-admin-workspace] #main > .page-heading { display: none; }
+[data-admin-workspace] #main > .panel { background: var(--admin-surface); border-color: var(--admin-line); }
+[data-admin-workspace] #main > .panel > .section-heading h2,
+[data-admin-workspace] #main > .panel > h2 { color: var(--admin-ink); font-size: clamp(22px, 2.4vw, 30px); letter-spacing: -.035em; }
+[data-admin-workspace] #main :is(input, select, textarea) { border-color: #a9bfbd; }
+[data-admin-workspace] #main :is(button, .button) { border-radius: 5px; }
+[data-admin-workspace] #main .table-scroll { background: var(--admin-surface); }
+@media (max-width: 600px) {
+  [data-admin-workspace] #shipping .shipment-info,
+  [data-admin-workspace] #shipping .shipment-info tbody { display: block; width: 100%; }
+  [data-admin-workspace] #shipping .shipment-info tr { display: grid; grid-template-columns: minmax(92px, 38%) minmax(0, 1fr); width: 100%; }
+  [data-admin-workspace] #shipping .shipment-info :is(th,td) { display: block; width: auto; min-width: 0; border: 0; border-bottom: 1px solid var(--admin-line); overflow-wrap: anywhere; white-space: normal; }
+  [data-admin-workspace] #shipping .shipment-info th { background: #f4f7f6; }
+}
+@media (max-width: 760px) {
+  [data-admin-workspace] .layout { margin-left: 0; }
+  [data-admin-workspace] #main { padding: 28px 18px 58px; }
+}

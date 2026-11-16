@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta name="referrer" content="no-referrer">
+  <script src="/StockPilot-Demo/interactive/runtime/client.js" defer></script>
+  <link rel="stylesheet" href="/StockPilot-Demo/interactive/runtime/demo.css">
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#252622">
+  <link rel="icon" type="image/webp" href="/StockPilot-Demo/interactive/assets/swimbait.webp">
+  <title>Order confirmation | Tide & Tackle</title>
+  <link rel="stylesheet" href="/StockPilot-Demo/interactive/static/portfolio/portfolio.css">
+  <link rel="stylesheet" href="/StockPilot-Demo/interactive/static/portfolio/admin-light.css">
+  <link rel="stylesheet" href="/StockPilot-Demo/interactive/static/portfolio/storefront.css">
+  <script src="/StockPilot-Demo/interactive/static/portfolio/kol-management.js" defer></script>
+  <script src="/StockPilot-Demo/interactive/static/portfolio/pickup-ui.js" defer></script>
+  <script src="/StockPilot-Demo/interactive/static/portfolio/portfolio.js" defer></script>
+  <script src="/StockPilot-Demo/interactive/static/portfolio/dashboard.js" defer></script>
+  <link rel="stylesheet" href="/StockPilot-Demo/interactive/static/portfolio/operations-dashboard.css">
+  <script src="/StockPilot-Demo/interactive/static/portfolio/order-detail.js" defer></script>
+  <link rel="stylesheet" href="/StockPilot-Demo/interactive/static/portfolio/order-detail.css">
+<link rel="stylesheet" href="/StockPilot-Demo/interactive/static/portfolio/theme-a.css"></head>
+<body data-demo-role="shop" data-demo-path="/confirmation" data-role="shop" data-page="store" data-shop-route="confirmation">
+  <a class="skip-link" href="#main-content">Skip to content</a><div class="demo-notice">Demonstration store · Use fictional details · No payments or deliveries</div><header class="site-header">
+    <a class="brand" href="/" aria-label="Tide &amp; Tackle home"><span class="brand-mark">T<span class="brand-dot">.</span></span><span class="brand-name">Tide &amp; Tackle<small>路亞選物</small></span></a>
+    <nav aria-label="主要導覽"><a href="/shop" data-store-nav="products">全部商品</a><a href="/shop?style=TIDE-SWIMBAIT" data-store-nav="hard">硬餌</a><a href="/shop?style=TIDE-FROG" data-store-nav="surface">水面餌</a><a href="/shop?style=TIDE-WORM" data-store-nav="soft">軟餌</a><a href="/#track-form" data-store-nav="tracking">訂單查詢</a><a href="/cart" id="cart-toggle" data-store-nav="cart" aria-controls="cart-title" aria-expanded="false">購物袋 <span id="header-cart-count">0</span></a></nav>
+  </header>
+
+  <main id="main-content">
+    <section class="app-section store-section view-panel" id="store" aria-labelledby="store-title">
+      <div class="section-heading"><div><p class="eyebrow dark" data-store-i18n="eyebrow">01 / 購物前台</p><h1 id="store-title" data-store-i18n="title">從水面到水下，挑一款路亞。</h1><p data-store-i18n="intro">依釣法選商品，下單後可查詢出貨進度。</p></div><div class="store-heading-tools"><div class="language-switch" role="group" aria-label="Storefront language / 購物前台語言"><button type="button" data-store-lang="zh" aria-pressed="true">中文</button><button type="button" data-store-lang="en" aria-pressed="false">English</button></div><span class="section-index">TACKLE / 01</span></div></div>
+      <div class="shopping-page-heading"><p class="eyebrow" id="shopping-page-eyebrow"></p><h1 id="shopping-page-title"></h1><p id="shopping-page-intro"></p></div><div class="store-banner"><div><p class="eyebrow">TIDE & TACKLE / LURE SHOP</p><h1 data-store-i18n="bannerTitle">下一竿，從這裡開始。</h1><p data-store-i18n="bannerText">硬餌、水面餌、軟餌。挑一款適合今天水域的裝備。</p><a class="hero-cta" href="/shop" data-store-i18n="heroCta">選購路亞 ↗</a></div><div class="store-banner-art"><img src="/StockPilot-Demo/interactive/assets/lake-hero.png" alt="Fishing tackle beside a quiet lake" width="1536" height="1024"></div></div>
+      <nav class="campaign-link" aria-label="選購分類"><span data-store-i18n="categoryLead">依釣法選路亞</span><a href="/shop?style=TIDE-SWIMBAIT" data-store-i18n="categoryHard">硬餌 ↗</a><a href="/shop?style=TIDE-FROG" data-store-i18n="categoryTopwater">水面餌 ↗</a><a href="/shop?style=TIDE-WORM" data-store-i18n="categorySoft">軟餌 ↗</a></nav>
+      <div class="journey-strip" aria-label="購物流程"><ol class="flow-list"><li data-tour-step="0"><span>01</span><strong>選商品</strong></li><li data-tour-step="1"><span>02</span><strong>確認下單</strong></li><li data-tour-step="2"><span>03</span><strong>查詢出貨</strong></li></ol><div class="journey-next"><p id="tour-status" role="status" aria-live="polite">先挑選一件商品。</p><a id="tour-next" href="#products">選購商品 ↗</a></div></div>
+      <div class="collection-heading"><div><p class="eyebrow dark" data-store-i18n="collectionLabel">TIDE & TACKLE / 精選商品</p><h2 data-store-i18n="collectionTitle">找到下一款路亞</h2></div><p data-store-i18n="collectionNote">每一款都能看細節，選好後加入購物袋。</p></div>
+      <div class="collection-tools">
+        <label><span id="catalog-search-label">Search the collection</span><input type="search" id="catalog-search" placeholder="Name or SKU"></label>
+        <label><span id="catalog-style-label">Lure style</span><select id="catalog-style"><option value="">All styles</option><option value="TIDE-SWIMBAIT">Hard baits</option><option value="TIDE-FROG">Topwater</option><option value="TIDE-WORM">Soft lures</option></select></label>
+        <label><span id="catalog-sort-label">Sort by</span><select id="catalog-sort"><option value="featured">Featured</option><option value="asc">Price: low to high</option><option value="desc">Price: high to low</option></select></label>
+        <label class="stock-filter"><input type="checkbox" id="catalog-stock"><span id="catalog-stock-label">In stock only</span></label><span id="catalog-count" role="status"></span>
+      </div>
+      <div class="store-layout">
+        <div id="products" class="product-list" aria-live="polite"><p class="loading">正在讀取商品…</p></div>
+        <button id="cart-overlay" class="cart-overlay" type="button" aria-label="關閉購物袋" hidden></button>
+        <div class="checkout-panel" aria-labelledby="cart-title">
+          <div class="cart-summary"><div class="cart-items"><div class="panel-top"><h2 id="cart-title" data-store-i18n="receiptItems">商品明細</h2><span id="cart-count" aria-live="polite">0 件</span><button id="cart-close" type="button" aria-label="關閉購物袋">×</button></div>
+          <div id="cart-lines" class="cart-lines"><p class="empty">先選一件商品。</p></div>
+          </div><div class="cart-order-summary" role="region" aria-labelledby="order-summary-title"><h2 id="order-summary-title" data-store-i18n="orderSummary">訂單摘要</h2>
+          <div class="cart-total"><span data-store-i18n="orderTotal">訂單金額</span><strong id="cart-total" aria-live="polite">NT$ 0</strong></div>
+          <p class="bag-limit" data-store-i18n="bagLimit"></p><a href="/checkout" class="button primary full" id="go-checkout" data-store-i18n="goCheckout"></a><a href="/shop" class="continue-shopping" data-store-i18n="continueShopping"></a></div></div><div class="checkout-form"><a class="back-to-bag" href="/cart" data-store-i18n="backToBag"></a>
+          <div class="checkout-fields" aria-label="結帳資料">
+            <h2 data-store-i18n="customerHeading">顧客與配送</h2>
+            <label for="checkout-name" data-store-i18n="customerName">顧客姓名</label><input id="checkout-name" maxlength="80" autocomplete="off" required>
+            <label for="checkout-email" data-store-i18n="customerEmail">電子郵件</label><input id="checkout-email" type="email" maxlength="160" autocomplete="off" required>
+            <label for="checkout-phone" data-store-i18n="customerPhone">聯絡電話</label><input id="checkout-phone" maxlength="40" autocomplete="off">
+            <label for="checkout-recipient" data-store-i18n="deliveryRecipient">收件人</label><input id="checkout-recipient" maxlength="80" autocomplete="off" required>
+            <label for="checkout-address" data-store-i18n="deliveryAddress">配送地址／取貨門市</label><input id="checkout-address" maxlength="250" autocomplete="off" required>
+            <label for="checkout-shipping" data-store-i18n="shippingMethod">配送方式</label><select id="checkout-shipping"><option value="超商取貨" data-store-i18n="pickup">超商取貨</option><option value="宅配" data-store-i18n="homeDelivery">宅配</option></select>
+            <input id="checkout-payment" type="hidden" value="模擬付款"><div class="checkout-payment-note"><strong data-store-i18n="paymentNoteTitle">模擬付款</strong><span data-store-i18n="paymentNoteHelp">確認後記錄付款模擬結果，不會實際扣款。</span></div>
+            <p id="checkout-attribution" class="quiet">未帶入活動來源；訂單會歸為一般流量。</p>
+          </div>
+          <p class="quiet" data-store-i18n="privacy">目前不提供線上付款，請勿輸入真實個人資料。</p>
+          <button class="button primary full" id="checkout" type="button" data-store-i18n="checkout" disabled>確認訂單</button>
+          <p id="checkout-message" class="message" role="status" aria-live="polite"></p></div>
+        </div>
+      </div>
+      <div id="receipt" class="order-receipt hidden" aria-live="polite"></div>
+      <div class="track-panel"><div><p class="eyebrow dark" data-store-i18n="trackLabel">訂單追蹤</p><h2 data-store-i18n="trackTitle">回來查看出貨進度</h2><p data-store-i18n="trackHelp">輸入訂單編號，即可查詢目前狀態與明細。</p></div><form id="track-form"><label for="track-order-id" data-store-i18n="trackInput">訂單編號</label><div><input id="track-order-id" name="order-id" autocomplete="off" spellcheck="false" placeholder="TIDE-…"><button class="button secondary" type="submit" data-store-i18n="trackButton">查詢訂單</button></div><p id="track-message" class="message" role="status" aria-live="polite"></p></form></div>
+      <div class="portfolio-story"><p class="eyebrow dark" data-store-i18n="storyLabel">關於這個作品</p><h2 data-store-i18n="storyTitle">一張訂單，走完營運與出貨。</h2><p data-store-i18n="storyBody">這個重建作品把購物、訂單、庫存與出貨放進同一條可追查的流程。產品與數據皆為虛構，系統流程參考作者過去的電商營運與內部系統規劃經驗，並非真實業績。</p><p data-store-i18n="storyTradeoff">下單不預扣庫存；原倉管系統在配貨時檢查逐件庫存與櫃位，完成出貨後再更新訂單進度。</p></div>
+    </section>
+
+    </main>
+  <footer><span>Tide & Tackle / Lure shop</span><span>Payment and shipping are simulated. No charge or delivery.</span></footer>
+<div class="pages-demo-bar" aria-label="展示入口"><a href="/StockPilot-Demo/interactive/store/">購物前台</a><a href="/StockPilot-Demo/interactive/operations/">營運</a><a href="/StockPilot-Demo/interactive/warehouse/#shipping">倉管出貨</a><span data-demo-status role="status">正在載入展示資料…</span></div></body>
+</html>

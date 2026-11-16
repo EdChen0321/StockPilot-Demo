@@ -1,0 +1,21 @@
+.pages-demo-bar {
+  position: fixed;
+  z-index: 90;
+  right: .75rem;
+  bottom: .75rem;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: .5rem .85rem;
+  max-width: calc(100vw - 1.5rem);
+  padding: .55rem .75rem;
+  border: 1px solid #4f655a;
+  border-radius: .5rem;
+  background: #183a32;
+  color: #fff;
+  box-shadow: 0 2px 8px #0003;
+  font: .8125rem/1.45 system-ui, sans-serif;
+}
+.pages-demo-bar a { color: #fff; text-decoration: underline; }
+.pages-demo-bar a:focus-visible { outline: 2px solid #fff; outline-offset: 3px; }
+body { padding-bottom: max(4rem, env(safe-area-inset-bottom)); }

@@ -3,74 +3,21 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="StockPilot 展示。從 Tide &amp; Tackle 商店訂單，到營運追蹤、庫存與倉管出貨。">
-  <title>StockPilot | 電商營運與倉管展示</title>
+  <meta name="description" content="操作 StockPilot 的購物前台、營運查單與倉管出貨。">
+  <title>StockPilot 操作展示</title>
   <link rel="icon" href="./favicon.svg" type="image/svg+xml">
-  <link rel="stylesheet" href="./style.css?v=showcase">
-  <script src="./app.js?v=showcase" defer></script>
+  <link rel="stylesheet" href="./style.css">
+  <script src="./app.js?v=interactive" defer></script>
 </head>
 <body>
-  <a class="skip-link" href="#main">跳至主要內容</a>
-  <header class="topbar">
-    <a class="brand" href="./">StockPilot</a>
-    <a href="https://github.com/EdChen0321/StockPilot-Demo">GitHub ↗</a>
-  </header>
-  <main id="main" tabindex="-1">
-    <h1>從購物下單到倉管出貨</h1>
-    <p class="intro">透過 Tide &amp; Tackle 的範例訂單，查看購物、營運與出貨如何串起來。</p>
-    <nav aria-label="切換展示工作區">
-      <a href="?mode=shop" data-mode="shop">購物前台</a>
-      <a href="?mode=operations" data-mode="operations">營運後台</a>
-      <a href="?mode=warehouse" data-mode="warehouse">倉管出貨</a>
+  <main>
+    <h1>StockPilot 操作展示</h1>
+    <p>在購物前台試下單，然後到營運查單及倉管出貨。請使用虛構資料。</p>
+    <nav aria-label="展示入口">
+      <a href="./interactive/store/">購物前台</a>
+      <a href="./interactive/operations/">營運後台</a>
+      <a href="./interactive/warehouse/#shipping">倉管出貨</a>
     </nav>
-    <p class="note">靜態展示畫面取自 StockPilot 本機完整版本，使用虛構資料。點圖可查看原尺寸。</p>
-    <section data-view="shop" aria-labelledby="shop-title">
-      <h2 id="shop-title">Tide &amp; Tackle 購物前台</h2>
-      <figure>
-        <a href="./showcase/store.webp">
-          <picture><source media="(max-width: 640px)" srcset="./showcase/store-mobile.webp"><img src="./showcase/store.webp" alt="Tide &amp; Tackle 商店首頁與路亞商品導覽" width="1440" height="1000"></picture>
-        </a>
-        <figcaption>商店首頁與商品導覽</figcaption>
-      </figure>
-      <figure>
-        <a href="./showcase/product.webp"><img src="./showcase/product.webp" alt="浮水青蛙餌商品頁，顯示價格、規格與購物袋入口" width="1440" height="1000" loading="lazy"></a>
-        <figcaption>商品詳情與購物袋入口</figcaption>
-      </figure>
-    </section>
-    <section data-view="operations" aria-labelledby="operations-title">
-      <h2 id="operations-title">營運後台</h2>
-      <figure>
-        <a href="./showcase/dashboard.webp">
-          <picture><source media="(max-width: 640px)" srcset="./showcase/dashboard-mobile.webp"><img src="./showcase/dashboard.webp" alt="營運 Dashboard 顯示銷售概況、訂單與庫存" width="1440" height="1000"></picture>
-        </a>
-        <figcaption>營運總覽</figcaption>
-      </figure>
-      <figure>
-        <a href="./showcase/orders.webp"><img src="./showcase/orders.webp" alt="顧客訂單查詢與處理狀態" width="1440" height="1000" loading="lazy"></a>
-        <figcaption>顧客訂單與出貨入口</figcaption>
-      </figure>
-      <figure>
-        <a href="./showcase/pickup.webp"><img src="./showcase/pickup.webp" alt="超商包裹追蹤與取貨狀態" width="1440" height="1000" loading="lazy"></a>
-        <figcaption>超商取貨追蹤</figcaption>
-      </figure>
-      <figure>
-        <a href="./showcase/kol.webp"><img src="./showcase/kol.webp" alt="KOL 歸屬、訂單與銷售分析" width="1440" height="1000" loading="lazy"></a>
-        <figcaption>KOL 歸屬與銷售分析</figcaption>
-      </figure>
-    </section>
-    <section data-view="warehouse" aria-labelledby="warehouse-title">
-      <h2 id="warehouse-title">倉管出貨</h2>
-      <figure>
-        <a href="./showcase/inventory.webp"><img src="./showcase/inventory.webp" alt="倉管 SKU 商品管理顯示商品與庫存資料" width="1440" height="1000"></a>
-        <figcaption>SKU 商品與庫存管理</figcaption>
-      </figure>
-      <figure>
-        <a href="./showcase/shipment.webp">
-          <picture><source media="(max-width: 640px)" srcset="./showcase/shipment-mobile.webp"><img src="./showcase/shipment.webp" alt="出貨單 SP-DEMO-001，包含商品核對與掃碼操作區" width="1440" height="1000" loading="lazy"></picture>
-        </a>
-        <figcaption>出貨單、商品核對與掃碼配貨</figcaption>
-      </figure>
-    </section>
   </main>
 </body>
 </html>

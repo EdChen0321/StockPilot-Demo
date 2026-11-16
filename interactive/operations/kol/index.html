@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta name="referrer" content="no-referrer">
+  <script src="/StockPilot-Demo/interactive/runtime/client.js" defer></script>
+  <link rel="stylesheet" href="/StockPilot-Demo/interactive/runtime/demo.css">
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#252622">
+  <link rel="icon" type="image/webp" href="/StockPilot-Demo/interactive/assets/swimbait.webp">
+  <title>StockPilot 營運 HUB｜訂單與銷售</title>
+  <link rel="stylesheet" href="/StockPilot-Demo/interactive/static/portfolio/portfolio.css">
+  <link rel="stylesheet" href="/StockPilot-Demo/interactive/static/portfolio/admin-light.css">
+  <link rel="stylesheet" href="/StockPilot-Demo/interactive/static/portfolio/storefront.css">
+  <script src="/StockPilot-Demo/interactive/static/portfolio/kol-management.js" defer></script>
+  <script src="/StockPilot-Demo/interactive/static/portfolio/pickup-ui.js" defer></script>
+  <script src="/StockPilot-Demo/interactive/static/portfolio/portfolio.js" defer></script>
+  <script src="/StockPilot-Demo/interactive/static/portfolio/dashboard.js" defer></script>
+  <link rel="stylesheet" href="/StockPilot-Demo/interactive/static/portfolio/operations-dashboard.css">
+  <script src="/StockPilot-Demo/interactive/static/portfolio/order-detail.js" defer></script>
+  <link rel="stylesheet" href="/StockPilot-Demo/interactive/static/portfolio/order-detail.css">
+<link rel="stylesheet" href="/StockPilot-Demo/interactive/static/portfolio/admin-shell.css"><script src="/StockPilot-Demo/interactive/static/portfolio/admin-shell.js" defer></script><link rel="stylesheet" href="/StockPilot-Demo/interactive/static/portfolio/theme-a.css"></head>
+<body data-demo-role="sales" data-demo-path="/kol" data-role="sales" data-fulfillment-url="/StockPilot-Demo/interactive/warehouse/">
+  <header class="hub-topbar"><button id="hub-menu" type="button" aria-label="開啟功能選單" aria-controls="hub-sidebar" aria-expanded="false">☰</button><a class="hub-topbrand" href="/StockPilot-Demo/interactive/operations/">StockPilot <span>／ 營運後台</span></a><nav class="admin-switch" aria-label="切換工作區"><a href="/StockPilot-Demo/interactive/store/">前台</a><a href="/StockPilot-Demo/interactive/operations/" aria-current="page">營運</a><a href="/StockPilot-Demo/interactive/warehouse/fulfillment">出貨</a></nav></header><aside id="hub-sidebar" class="hub-sidebar" aria-label="營運後台功能"><a class="hub-sidebar-brand" href="/StockPilot-Demo/interactive/operations/" aria-label="StockPilot 營運總覽">S<span>.</span><small>STOCKPILOT</small></a><p>營運後台</p><p class="admin-demo">本機展示 · 虛構資料<br>非真實商業成果</p><nav class="admin-nav" aria-label="主要功能"><a href="/StockPilot-Demo/interactive/operations/" data-nav-key="hub">總覽</a><a href="/StockPilot-Demo/interactive/operations/orders" data-nav-key="customer-orders">顧客訂單</a><a href="/StockPilot-Demo/interactive/operations/pickups" data-nav-key="pickups">取貨追蹤</a><a href="/StockPilot-Demo/interactive/operations/sales" data-nav-key="sales">銷售報表</a><a href="/StockPilot-Demo/interactive/operations/kol" data-nav-key="kol" aria-current="page">KOL 分析</a></nav><p>資料作業</p><nav class="admin-nav" aria-label="資料作業"><a href="/StockPilot-Demo/interactive/kol-workspace/#import" data-nav-key="import">匯入訂單</a><a href="/StockPilot-Demo/interactive/kol-workspace/#orders" data-nav-key="orders">手動接單</a><a href="/StockPilot-Demo/interactive/kol-workspace/#sources" data-nav-key="sources">訂單來源</a><a href="/StockPilot-Demo/interactive/kol-workspace/#history" data-nav-key="history">匯入紀錄</a><a href="/StockPilot-Demo/interactive/kol-workspace/#catalogue" data-nav-key="catalogue">SKU 商品對照</a></nav><details class="admin-more"><summary>更多功能</summary><nav class="admin-nav" aria-label="更多功能"><a href="/StockPilot-Demo/interactive/kol-workspace/#sales" data-nav-key="sales-detail">銷售明細查詢</a><a href="/StockPilot-Demo/interactive/kol-workspace/#dashboard" data-nav-key="dashboard">進階銷售總覽</a><a href="/StockPilot-Demo/interactive/kol-workspace/#kol" data-nav-key="kol-settings">KOL 設定</a><a href="/StockPilot-Demo/interactive/kol-workspace/#assistant" data-nav-key="assistant">AI 助理</a><a href="/StockPilot-Demo/interactive/kol-workspace/#ai-settings" data-nav-key="ai-settings">AI 設定</a><a href="/StockPilot-Demo/interactive/kol-workspace/#ai-evaluation" data-nav-key="ai-evaluation">AI 評測</a></nav></details></aside><button id="hub-overlay" class="hub-overlay" type="button" aria-label="關閉功能選單"></button>
+
+  <main id="main-content" class="hub-main">
+    <section class="app-section kol-section view-panel" id="kol" aria-labelledby="kol-title">
+      <div class="section-heading"><div><p class="eyebrow dark">04 / KOL 分析</p><h1 id="kol-title">來源歸屬，必須有依據。</h1><p>前台訂單的 UTM medium 會送進現有營運模組，使用它的精確比對規則計算 KOL 歸屬。</p></div><span class="section-index">KOL / 04</span></div>
+      <div id="kol-content" class="kol-content" aria-live="polite"><p class="loading">正在讀取 KOL 資料…</p></div>
+      <p class="quiet">UTM 是加在行銷連結上的標記。只有訂單帶入能匹配的 <code>utm_medium</code>，才會歸到對應 KOL；沒有標記時不自行推定。</p>
+      <p class="legacy-link">需要查看匯入預檢、KOL 設定、明細報表及匯出？<a id="kol-workspace-link" href="#kol">開啟進階營運功能 ↗</a>（商店訂單會以相同編號寫入營運資料庫）。</p>
+    </section>
+  </main>
+
+<div class="pages-demo-bar" aria-label="展示入口"><a href="/StockPilot-Demo/interactive/store/">購物前台</a><a href="/StockPilot-Demo/interactive/operations/">營運</a><a href="/StockPilot-Demo/interactive/warehouse/#shipping">倉管出貨</a><span data-demo-status role="status">正在載入展示資料…</span></div></body>
+</html>
