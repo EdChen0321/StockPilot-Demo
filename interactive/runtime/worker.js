@@ -46,6 +46,7 @@ async function run(message) {
   const pyodide = await (engine ||= bootstrap(message.base));
   return navigator.locks.request('stockpilot-demo-sqlite', async () => {
     const current = await snapshot();
+    let initialized = false;
     if (!loadedRevision || loadedRevision !== current?.revision) {
       for (const [index, filename] of filenames.entries()) {
         const path = dataDirectory + '/' + filename;
@@ -54,6 +55,7 @@ async function run(message) {
       }
       if (!current || !loadedRevision) {
         pyodide.runPython('demo = Runtime(demo_directory, demo_base)');
+        initialized = true;
       }
       loadedRevision = current?.revision;
     }
@@ -67,7 +69,7 @@ async function run(message) {
       } finally {
         demo.destroy();
       }
-      if (!current || message.method === 'POST') {
+      if (!current || initialized || message.method === 'POST') {
         const revision = crypto.randomUUID();
         const files = filenames.map(name => pyodide.FS.readFile(dataDirectory + '/' + name));
         await snapshot({ revision, files });

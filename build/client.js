@@ -3,7 +3,8 @@
   const role = document.body.dataset.demoRole;
   const logicalPath = document.body.dataset.demoPath;
   const nativeFetch = window.fetch.bind(window);
-  const worker = new Worker(new URL('runtime/worker.js', base));
+  const sharedRequest = window.parent !== window && window.parent.stockpilotRequest;
+  const worker = sharedRequest ? null : new Worker(new URL('runtime/worker.js', base));
   const pending = new Map();
   let sequence = 0;
   let failure;
@@ -15,8 +16,8 @@
     document.querySelector('[data-demo-status]').textContent = '展示資料無法載入。請重新整理再試。';
   }
 
-  worker.addEventListener('error', event => fail(event.message || '展示程式無法啟動'));
-  worker.addEventListener('message', ({ data }) => {
+  worker?.addEventListener('error', event => fail(event.message || '展示程式無法啟動'));
+  worker?.addEventListener('message', ({ data }) => {
     const request = pending.get(data.id);
     if (!request) return;
     pending.delete(data.id);
@@ -25,6 +26,7 @@
   });
 
   function rpc(message) {
+    if (sharedRequest) return sharedRequest(message);
     if (failure) return Promise.reject(failure);
     return new Promise((resolve, reject) => {
       const id = ++sequence;

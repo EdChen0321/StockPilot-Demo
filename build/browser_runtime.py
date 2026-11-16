@@ -103,6 +103,26 @@ class Runtime:
         self.operations_request = OperationsRequest
         showcase.seed_sample_order(store, demo)
         showcase.sync_existing_orders(self.contexts['shop'])
+        self.seed_orders()
+
+    def seed_orders(self):
+        handler = PortfolioRequest()
+        handler.server = self.contexts['shop']
+        for index in range(1, 13):
+            token = f'{index + 1000:032x}'
+            with self.shared['store'].connect() as db:
+                exists = db.execute('SELECT 1 FROM portfolio_checkouts WHERE token=?', (token,)).fetchone()
+            if exists:
+                continue
+            item = self.shared['portfolio']['products'][index % 3]
+            handler.checkout(dict(
+                token=token, lines=[dict(product_id=item['id'], quantity=1)],
+                customer=dict(name=f'展示顧客 {index:02d}', email=f'demo-{index}@example.invalid'),
+                delivery=dict(recipient=f'展示顧客 {index:02d}', address='虛構展示門市'),
+                payment_method='模擬付款', shipping_method='超商取貨',
+                utm=dict(source='instagram' if index % 2 else 'direct',
+                         medium='alex-tide' if index % 2 else '', campaign='demo'),
+            ))
 
     def request(self, role, target, method='GET', payload='null'):
         handler = self.operations_request() if role == 'kol' else PortfolioRequest()

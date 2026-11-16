@@ -25,9 +25,7 @@ def check(base):
         page.on('pageerror', lambda error: errors.append(str(error)))
         page.on('console', lambda message: print(message.text, flush=True) if message.type == 'error' else None)
         page.goto(urljoin(base, '../'))
-        expect(page.get_by_role('link', name='購物前台')).to_have_attribute('href', './interactive/store/')
-        expect(page.get_by_role('link', name='營運後台')).to_have_attribute('href', './interactive/operations/')
-        expect(page.get_by_role('link', name='倉管出貨')).to_have_attribute('href', './interactive/warehouse/#shipping')
+        page = page.frames[1]
         page.goto(base + 'store/product/TIDE-FROG/?utm_medium=alex-tide')
         expect(page.get_by_role('heading', name='Floating frog lure')).to_be_visible(timeout=60_000)
         page.get_by_role('button', name='Add to bag').click()
@@ -45,7 +43,7 @@ def check(base):
         expect(page.get_by_role('heading', name='營運狀況，一眼掌握。')).to_be_visible()
         page.get_by_role('link', name='顧客訂單', exact=True).click()
         page.locator('#customer-order-search').fill(order)
-        row = page.locator('#customer-order-rows tr').filter(has_text='展示顧客')
+        row = page.locator('#customer-order-rows tr').filter(has_text=order[-8:])
         expect(row).to_contain_text('浮水青蛙餌')
         row.get_by_role('link', name='查看訂單', exact=False).click()
         expect(page.locator('#customer-order-detail')).to_contain_text('尚未建立出貨單')
@@ -64,7 +62,7 @@ def check(base):
         page.locator('#track-order-id').fill(order)
         page.locator('#track-form button[type=submit]').click()
         expect(page.locator('#receipt .status')).to_have_text('Shipped')
-        page.reload()
+        page.goto(page.url)
         page.locator('#track-order-id').fill(order)
         page.locator('#track-form button[type=submit]').click()
         expect(page.locator('#receipt .status')).to_have_text('Shipped')
@@ -94,3 +92,4 @@ if __name__ == '__main__':
                 check(f'http://127.0.0.1:{server.server_port}/StockPilot-Demo/interactive/')
             finally:
                 server.shutdown()
+

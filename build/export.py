@@ -94,6 +94,9 @@ def export(source, prefix):
         if 'rel="icon"' not in html:
             html = html.replace('</head>', f'<link rel="icon" href="{prefix}assets/swimbait.webp"></head>', 1)
         html = html.replace('<head>', '<head>\n  <meta name="referrer" content="no-referrer">\n'
+                            '<script>if(window.top===window){location.replace('
+                            f'"/StockPilot-Demo/?view="+encodeURIComponent(location.pathname+location.search+location.hash)'
+                            ');}</script>\n'
                             f'  <script src="{prefix}runtime/client.js" defer></script>\n'
                             f'  <link rel="stylesheet" href="{prefix}runtime/demo.css">', 1)
         html = re.sub(r'<body\b', f'<body data-demo-role="{role}" data-demo-path="{path}"', html, count=1)
