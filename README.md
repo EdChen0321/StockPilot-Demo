@@ -1,30 +1,7 @@
-# StockPilot 操作展示
+# StockPilot 線上展示
 
-這是 [StockPilot 倉管系統](https://github.com/EdChen0321/StockPilot-Warehouse)與 [StockPilot 營運系統](https://github.com/EdChen0321/StockPilot-Operations)的獨立、可操作展示網站。
+[開啟 GitHub Pages](https://edchen0321.github.io/StockPilot-Demo/)
 
-## 可以操作的流程
+從 Tide & Tackle 購物前台，到營運訂單、KOL 與取貨追蹤，再到庫存及倉管出貨。展示畫面擷取自本機整合版本，使用獨立的虛構商品、顧客與訂單資料。
 
-- **倉管：** 查看庫存 → 建立並確認入庫單 → 配入符合條件的櫃位 → 建立出貨單 → 加入商品 → 配貨 → 完成出貨。
-- **營運：** KOL 合作檔案 → 查看主要銷售商品與件數 → 點商品追查訂單 → 將未知 UTM 歸到合作夥伴；另可操作訂單建立、取消與匯入預覽。
-
-網站使用合成範例資料，包括未配櫃庫存、停用櫃位、取消訂單與缺少 UTM 的訂單。訪客可以自行操作、查看狀態和數字如何變化。操作狀態只存在該瀏覽器的 `localStorage`，可按「重設範例資料」清除。
-
-## 展示邊界
-
-GitHub Pages 無法執行原專案的 Python API 或 SQLite。此網站用瀏覽器程式重現上述主要作業的互動與規則，不會連接或修改任何原專案資料。兩個系統各自獨立，這裡也沒有建立跨系統同步。頁面未包含原專案的全部功能；實際功能、操作和限制以兩個專案的 README 及操作指南為準。
-
-## 依據
-
-- [倉管：庫存與出貨指南](https://github.com/EdChen0321/StockPilot-Warehouse/blob/main/docs/inventory-shipping.md)
-- [營運：訂單與銷售指南](https://github.com/EdChen0321/StockPilot-Operations/blob/main/docs/orders-sales.md)
-- [營運：KOL 分析指南](https://github.com/EdChen0321/StockPilot-Operations/blob/main/docs/kol-analysis.md)
-
-## 本機預覽
-
-在此目錄執行 `python -m http.server 8000`，開啟 `http://127.0.0.1:8000/`。無需安裝套件。
-
-## 授權
-
-本站程式碼採用 [MIT License](LICENSE)。兩個產品專案各有自己的授權與狀態說明。
-
-營運直達入口：[KOL 工作台](https://edchen0321.github.io/StockPilot-Demo/?mode=operations)。預載已確認的合成歷史訂單（H 開頭），另有可預覽／確認的新範例批次（K 開頭）；商品分析只統計件數與訂單數，不分攤訂單金額為商品營收。
+GitHub Pages 以 main 分支提供靜態展示。購物前台、營運與倉管入口可分別用 ?mode=shop、?mode=operations、?mode=warehouse 開啟。
