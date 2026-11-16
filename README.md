@@ -16,3 +16,11 @@ python StockPilot-Demo/build/check_flow.py
 ```
 
 匯出工具會從相鄰的倉管與營運原始碼重建 GitHub Pages 的 interactive 目錄。測試使用 Playwright 與 Microsoft Edge，以靜態 HTTP 服務確認下單、查單、掃碼出貨與重整後的資料讀取。
+
+## 完整初始資料
+
+2026-11-16 版本採用本機 scale-a 展示的 SQLite 備份，包含 360 款商品、5,005 張訂單、4,341 件庫存品項紀錄、7 張出貨單及 8 張入庫單，保留包裹、退貨與異動關聯。數量快照位於 interactive/runtime/seed-manifest.json。
+
+完整資料使用獨立 IndexedDB 資料區。此前的小型展示資料仍留在舊資料區。每位訪客的後續試單只保存於自己的瀏覽器。
+
+重新匯出本機展示資料時執行 python StockPilot-Demo/build/export_data.py，再執行 export.py 和 check_flow.py。

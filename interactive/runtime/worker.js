@@ -3,7 +3,7 @@ const dataDirectory = '/stockpilot-demo-data';
 const filenames = ['warehouse.sqlite3', 'operations.sqlite3'];
 
 const opened = new Promise((resolve, reject) => {
-  const request = indexedDB.open('stockpilot-interactive-demo', 1);
+  const request = indexedDB.open('stockpilot-complete-demo-20261116', 1);
   request.onupgradeneeded = () => request.result.createObjectStore('snapshots');
   request.onsuccess = () => resolve(request.result);
   request.onerror = () => reject(request.error);
@@ -52,6 +52,11 @@ async function run(message) {
         const path = dataDirectory + '/' + filename;
         if (current) pyodide.FS.writeFile(path, current.files[index]);
         else if (pyodide.FS.analyzePath(path).exists) pyodide.FS.unlink(path);
+      }
+      if (!current) {
+        const response = await fetch(new URL('runtime/seed.zip', message.base));
+        if (!response.ok) throw new Error('完整展示資料下載失敗');
+        pyodide.unpackArchive(await response.arrayBuffer(), 'zip', { extractDir: dataDirectory });
       }
       if (!current || !loadedRevision) {
         pyodide.runPython('demo = Runtime(demo_directory, demo_base)');

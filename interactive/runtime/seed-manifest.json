@@ -1,0 +1,16 @@
+{
+  "warehouse": {
+    "products": 360,
+    "current_orders": 5005,
+    "stock_units": 4341,
+    "shipments": 7,
+    "receipts": 8
+  },
+  "operations": {
+    "products": 360,
+    "current_orders": 5005,
+    "stock_units": 0,
+    "shipments": 0,
+    "receipts": 0
+  }
+}
