@@ -9,12 +9,13 @@ const opened = new Promise((resolve, reject) => {
   request.onerror = () => reject(request.error);
 });
 
-async function snapshot(value) {
+async function snapshot(value, key = 'current') {
   const db = await opened;
   return new Promise((resolve, reject) => {
     const transaction = db.transaction('snapshots', value ? 'readwrite' : 'readonly');
     const store = transaction.objectStore('snapshots');
-    const request = value ? store.put(value, 'current') : store.get('current');
+    const request = value ? store.put(value, 'current') : store.get(key);
+    if (value) store.put(value.revision, 'revision');
     transaction.oncomplete = () => resolve(request.result);
     transaction.onabort = () => reject(transaction.error);
   });
@@ -45,7 +46,10 @@ let loadedRevision;
 async function run(message) {
   const pyodide = await (engine ||= bootstrap(message.base));
   return navigator.locks.request('stockpilot-demo-sqlite', async () => {
-    const current = await snapshot();
+    const revision = await snapshot(undefined, 'revision');
+    const current = revision && revision === loadedRevision
+      ? { revision }
+      : await snapshot();
     let initialized = false;
     if (!loadedRevision || loadedRevision !== current?.revision) {
       for (const [index, filename] of filenames.entries()) {
