@@ -22,13 +22,21 @@ async function snapshot(value, key = 'current') {
 }
 
 async function bootstrap(base) {
+  const started = performance.now();
+  const download = async name => {
+    const response = await fetch(new URL('runtime/' + name, base));
+    if (!response.ok) throw new Error('展示資料下載失敗');
+    return response.arrayBuffer();
+  };
+  const application = download('python.zip');
+  seedArchive = snapshot(undefined, 'revision').then(revision => revision ? null : download('seed.zip'));
+  // Attach rejection handlers immediately while the engine is loading.
+  application.catch(() => {});
+  seedArchive.catch(() => {});
   importScripts(pyodideURL + 'pyodide.js');
   const pyodide = await loadPyodide({ indexURL: pyodideURL });
-  await pyodide.loadPackage(['sqlite3', 'micropip', 'tzdata']);
-  await pyodide.runPythonAsync('import micropip\nawait micropip.install("openpyxl==3.1.5")');
-  const response = await fetch(new URL('runtime/python.zip', base));
-  if (!response.ok) throw new Error('展示程式下載失敗');
-  pyodide.unpackArchive(await response.arrayBuffer(), 'zip', { extractDir: '/stockpilot' });
+  await pyodide.loadPackage(['sqlite3', 'tzdata']);
+  pyodide.unpackArchive(await application, 'zip', { extractDir: '/stockpilot' });
   pyodide.globals.set('demo_directory', dataDirectory);
   pyodide.globals.set('demo_base', base);
   pyodide.runPython(`
@@ -38,10 +46,12 @@ sys.path.insert(0, '/stockpilot')
 from browser_runtime import Runtime
 `);
   pyodide.FS.mkdirTree(dataDirectory);
+  console.info('StockPilot engine ready', Math.round(performance.now() - started), 'ms');
   return pyodide;
 }
 
 let engine;
+let seedArchive;
 let loadedRevision;
 async function run(message) {
   const pyodide = await (engine ||= bootstrap(message.base));
@@ -58,9 +68,9 @@ async function run(message) {
         else if (pyodide.FS.analyzePath(path).exists) pyodide.FS.unlink(path);
       }
       if (!current) {
-        const response = await fetch(new URL('runtime/seed.zip', message.base));
-        if (!response.ok) throw new Error('完整展示資料下載失敗');
-        pyodide.unpackArchive(await response.arrayBuffer(), 'zip', { extractDir: dataDirectory });
+        const archive = await seedArchive;
+        if (!archive) throw new Error('展示初始資料缺失，請重新整理');
+        pyodide.unpackArchive(archive, 'zip', { extractDir: dataDirectory });
       }
       if (!current || !loadedRevision) {
         pyodide.runPython('demo = Runtime(demo_directory, demo_base)');
@@ -94,6 +104,10 @@ async function run(message) {
 
 self.onmessage = async ({ data }) => {
   try {
+    if (data.preload) {
+      await (engine ||= bootstrap(data.base));
+      return;
+    }
     self.postMessage({ id: data.id, result: await run(data) });
   } catch (error) {
     self.postMessage({ id: data.id, error: String(error.message || error) });

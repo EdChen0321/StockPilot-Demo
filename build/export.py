@@ -4,6 +4,7 @@ import argparse
 import re
 import shutil
 import sys
+import importlib
 from pathlib import Path
 from zipfile import ZIP_DEFLATED, ZipFile
 
@@ -41,6 +42,13 @@ def export(source, prefix):
             if file.name not in {'scale_fixture.py', 'scale_benchmark.py', 'pickup_demo.py', 'restore_showcase.py', 'showcase_audit.py'}:
                 archive.write(file, Path('warehouse/portfolio') / file.name)
         archive.write(BUILD / 'browser_runtime.py', 'browser_runtime.py')
+        # Pure-Python spreadsheet readers ship with the application, avoiding
+        # a package-index lookup and installation on every browser startup.
+        for package in ('openpyxl', 'et_xmlfile'):
+            module = importlib.import_module(package)
+            directory = Path(module.__file__).parent
+            for file in sorted(directory.rglob('*.py')):
+                archive.write(file, Path(package) / file.relative_to(directory))
 
     for name in ('lake-hero.png', 'swimbait.webp', 'frog.webp', 'worm.webp',
                  'swimbait-detail.webp', 'frog-detail.webp', 'worm-detail.webp'):
@@ -91,8 +99,8 @@ def export(source, prefix):
             return f'{attribute}="{prefix}static/{group}/{name}'
 
         html = re.sub(r'(src|href)="/([^"?\s]+\.(?:js|css|png|webp))(?=["?])', static_url, html)
-        if 'rel="icon"' not in html:
-            html = html.replace('</head>', f'<link rel="icon" href="{prefix}assets/swimbait.webp"></head>', 1)
+        html = re.sub(r'<link\b[^>]*rel="icon"[^>]*>', '', html)
+        html = html.replace('</head>', '<link rel="icon" href="/StockPilot-Demo/favicon.svg?v=stockpilot-2" type="image/svg+xml"></head>', 1)
         html = html.replace('<head>', '<head>\n  <meta name="referrer" content="no-referrer">\n'
                             '<script>if(window.top===window){location.replace('
                             f'"/StockPilot-Demo/?view="+encodeURIComponent(location.pathname+location.search+location.hash)'

@@ -1,5 +1,6 @@
 const base = new URL('./interactive/', location.href);
 const worker = new Worker(new URL('runtime/worker.js', base));
+worker.postMessage({ preload: true, base: base.href });
 let sequence = 0;
 const pending = new Map();
 worker.onmessage = ({data}) => {
