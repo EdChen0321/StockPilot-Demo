@@ -2,9 +2,9 @@
   "warehouse": {
     "products": 365,
     "current_orders": 5005,
-    "stock_units": 4358,
+    "stock_units": 4411,
     "shipments": 7,
-    "receipts": 10
+    "receipts": 13
   },
   "operations": {
     "products": 360,
