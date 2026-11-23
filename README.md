@@ -19,7 +19,7 @@ python StockPilot-Demo/build/check_flow.py
 
 ## 完整初始資料
 
-2026-11-16 版本採用本機 scale-a 展示的 SQLite 備份，包含 360 款商品、5,005 張訂單、4,341 件庫存品項紀錄、7 張出貨單及 8 張入庫單，保留包裹、退貨與異動關聯。數量快照位於 interactive/runtime/seed-manifest.json。
+2026-11-23 版本採用本機 scale-a 展示的 SQLite 備份，包含 365 款商品、5,005 張訂單、4,358 件庫存品項紀錄、7 張出貨單、10 張入庫單，以及完整的物料、供應商、BOM、採購成本與工廠生產流程資料，保留包裹、退貨與異動關聯。數量快照位於 interactive/runtime/seed-manifest.json。
 
 完整資料使用獨立 IndexedDB 資料區。此前的小型展示資料仍留在舊資料區。每位訪客的後續試單只保存於自己的瀏覽器。
 

@@ -26,7 +26,7 @@ function materialForm(title,saveText,save){
   const form=node('form',undefined,'material-form'), fields=node('div',undefined,'editor-grid');form.append(fields);
   const actions=node('div',undefined,'form-actions'), submit=node('button',saveText);submit.type='submit';actions.append(submit);form.append(actions);target.append(form);
   const send=materialSubmitter();
-  form.addEventListener('submit',e=>{e.preventDefault();if(submit.disabled)return;stockAction('materials',submit,async()=>{await save(send);await refreshMaterials();stockMessage('materials','已保存。');});});
+  form.addEventListener('submit',e=>{e.preventDefault();if(submit.disabled)return;stockAction('materials',submit,async()=>{const nextRoute=await save(send);await refreshMaterials();if(nextRoute&&location.hash!=='#'+nextRoute)navigatePage(nextRoute);stockMessage('materials','已保存。');});});
   return {form,fields,actions};
 }
 function materialLines(parent, initial=[], allowed=null, unit=false, priced=false){
@@ -46,7 +46,7 @@ function materialLines(parent, initial=[], allowed=null, unit=false, priced=fals
 }
 function materialTable(headers, records){
   const wrap=node('div',undefined,'table-scroll'), table=node('table'), head=node('thead'), row=node('tr');
-  const numeric=label=>/在庫|數量|用量|需求|預留|可用|缺口|在途|異動前|異動後|本次量|已發|已退|已收|待收|取消餘量|^採購$|版本|品項/.test(label);
+  const numeric=label=>/在庫|數量|用量|需求|預留|可用|缺口|在途|待購|草稿量|異動前|異動後|本次量|已發|已退|已收|待收|取消餘量|^採購$|版本|品項/.test(label);
   for(const label of headers){const th=node('th',label,numeric(label)?'numeric':'');th.scope='col';row.append(th);}head.append(row);table.append(head);
   const body=node('tbody');for(const cells of records){const tr=node('tr');cells.forEach((value,index)=>{const td=node('td',undefined,numeric(headers[index])?'numeric':'');td.append(typeof value==='string'?document.createTextNode(value):value);tr.append(td);});body.append(tr);}table.append(body);wrap.append(table);return wrap;
 }
@@ -117,15 +117,36 @@ function editBom(productId=''){
   if(current)fields.append(node('p',`目前版本 ${current.version}，既有計畫使用原快照。`));
 }
 function newMaterialPlan(){
-  let number,p,qty,factory,date,comment;const {fields}=materialForm('新增工廠生產單','保存生產草稿',async()=>{const saved=await request('/api/materials/plans',{operation_id:operation(),number:number.value,product_id:p.value,quantity:Number(qty.value),factory_id:factory.value,expected_date:date.value,comment:comment.value});materialSelection=saved.id;});
+  let mode,number,p,qty,factory,date,comment;
+  const {fields}=materialForm('新增生產計畫','保存生產草稿',async send=>{
+    const body={number:number.value,product_id:p.value,quantity:Number(qty.value)};
+    if(mode.value==='reported')Object.assign(body,{factory_id:factory.value,expected_date:date.value,comment:comment.value});
+    await send('/api/materials/plans',body);
+  });
+  mode=materialField(fields,'需求來源','reported',[{value:'reported',label:'依工廠回報'},{value:'bom',label:'依商品 BOM'}]);
   number=materialField(fields,'計畫單號');p=materialField(fields,'生產商品','',boot.products.filter(p=>p.kind==='product'&&p.active).map(p=>({value:p.id,label:`${p.name} · ${p.sku}`})));qty=materialField(fields,'預計生產數量','1',null,'number');qty.min='1';qty.step='1';
   factory=materialField(fields,'產品工廠','',materialData.suppliers.filter(s=>s.active).map(s=>({value:s.id,label:s.name})));
   date=materialField(fields,'預計成品到貨日','',null,'date');date.required=false;
   comment=materialField(fields,'備註');comment.required=false;
-  fields.append(node('p','依工廠回報叫料，不需先建立 BOM。確認生產不會扣料或增加成品庫存。'),productionLink('新增／管理工廠與供應商','materials/suppliers'));
+  const hint=node('p');
+  const suppliersLink=productionLink('新增／管理工廠與供應商','materials/suppliers');
+  fields.append(hint,suppliersLink);
+  function updateMode(){
+    const reported=mode.value==='reported';
+    for(const field of [factory,date,comment]){
+      field.disabled=!reported;
+      field.parentElement.hidden=!reported;
+    }
+    suppliersLink.hidden=!reported;
+    hint.textContent=reported
+      ? '依工廠回報叫料，不需先建立 BOM。確認生產不會扣料或增加成品庫存。'
+      : '請選擇已建立 BOM 的商品。物料需求按每件用量乘以預計生產數量，草稿會列入需求彙總。';
+  }
+  mode.addEventListener('change',updateMode);
+  updateMode();
 }
 function newMaterialPurchase(plan=null){
-  let number,supplier,lines,expected,comment;const {fields,form,actions}=materialForm('新增物料採購單','保存採購草稿',async send=>{const saved=await send('/api/materials/purchases',{number:number.value,supplier_id:supplier.value,expected_date:expected.value,comment:comment.value,lines:lines(),...(plan?{plan_id:plan.id}:{})});materialSelection=saved.id;materialTab='purchases';navigatePage('materials/purchases/'+saved.id);});
+  let number,supplier,lines,expected,comment;const {fields,form,actions}=materialForm('新增物料採購單','保存採購草稿',async send=>{const saved=await send('/api/materials/purchases',{number:number.value,supplier_id:supplier.value,expected_date:expected.value,comment:comment.value,lines:lines(),...(plan?{plan_id:plan.id}:{})});materialSelection=saved.id;materialTab='purchases';return 'materials/purchases/'+encodeURIComponent(saved.id);});
   number=materialField(fields,'採購單號');supplier=materialField(fields,'採購供應商','',materialData.suppliers.filter(s=>s.active).map(s=>({value:s.id,label:s.name})));
   expected=materialField(fields,'預計到貨日','',null,'date');expected.required=false;
   comment=materialField(fields,'備註');comment.required=false;comment.maxLength=2000;
@@ -309,8 +330,46 @@ async function updateMaterialSummary(target){
   const data=await request('/api/materials/summary?'+query);
   if(sequence!==materialSummarySequence||!target.isConnected)return;
   target.replaceChildren();
-  target.append(node('p',materialSummaryIds.size?`已選 ${data.plan_ids.length} 張計畫`:'全部有效計畫'),node('p','BOM 需求依既有配方計算；工廠回報叫料請到生產單建立關聯採購，不會自動產生 BOM 需求。'),materialTable(['物料','需求','本次已預留','可用','即時缺口','在途','單位'],data.materials.map(m=>[`${m.name} · ${m.code}`,m.demand,m.selected_reserved,m.available,m.shortage,m.incoming,m.unit])));
-  const detail=node('section',undefined,'content-section');detail.append(node('h3','計算依據'),node('p','需求扣除已發料；本次預留不重扣。可用＝在庫－全部預留。在途尚未驗收，不算立即可用。'),node('p','請比較即時缺口與在途數量、核對交期後，依供應商手動建立採購草稿，再確認叫貨。此頁只計算，不會自動建立或送出採購單。'));target.append(detail);
+  const selected=new Map();
+  const send=materialSubmitter();
+  const feedback=node('div');
+  feedback.setAttribute('role','status');
+  const createDrafts=materialButton('依供應商建立採購草稿',async()=>{
+    if(!selected.size)return;
+    const result=await send('/api/materials/summary/purchases',{
+      plan_ids:data.plan_ids,selection:Object.fromEntries(selected)
+    });
+    await refreshMaterials();
+    if(materialTab==='summary'){
+      const links=result.purchases.map(p=>productionLink(p.number,'materials/purchases/'+p.id));
+      $('material-summary').prepend(node('p',`已建立 ${links.length} 張採購草稿`),...links);
+    }
+  },false);
+  createDrafts.disabled=true;
+  const rows=data.materials.map(m=>{
+    const name=`${m.name} · ${m.code}`;
+    let pick='—';
+    if(m.can_purchase){
+      const check=node('input');
+      check.type='checkbox';
+      check.setAttribute('aria-label',`勾選採購 ${name}`);
+      check.addEventListener('change',()=>{
+        if(check.checked)selected.set(m.material_id,m.to_purchase);
+        else selected.delete(m.material_id);
+        createDrafts.disabled=!selected.size;
+        feedback.textContent=selected.size?`已選 ${selected.size} 項物料`:'';
+      });
+      pick=check;
+    }
+    return [pick,name,m.supplier_id?supplierName(m.supplier_id):'—',m.demand,m.selected_reserved,
+      m.available,m.shortage,m.incoming,m.draft??'0',m.to_purchase??'—',m.unit];
+  });
+  target.append(node('p',materialSummaryIds.size?`已選 ${data.plan_ids.length} 張計畫`:'全部有效計畫'),
+    createDrafts,feedback,materialTable(['採購勾選','物料','供應商','需求','本次已預留','可用','即時缺口','在途','草稿量','待購','單位'],rows));
+  const detail=node('section',undefined,'content-section');
+  detail.append(node('h3','計算依據'),node('p','需求扣除已發料；本次預留不重扣。可用＝在庫－全部預留。'),
+    node('p','待購＝即時缺口扣除在途與採購草稿，最低為零。勾選待購物料後，系統依供應商各建一張草稿。'));
+  target.append(detail);
 }
 $('material-new').addEventListener('click',()=>{materialSelection=null;if(['materials','suppliers'].includes(materialTab))editMaterialMaster();else if(materialTab==='boms')editBom();else if(materialTab==='plans')newMaterialPlan();else newMaterialPurchase();});
 window.addEventListener('workspace-refreshed',()=>{materialsLoaded=false;if(location.hash.startsWith('#materials'))refreshMaterials().catch(e=>stockMessage('materials',e.message,true));});

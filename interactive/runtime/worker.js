@@ -3,7 +3,7 @@ const dataDirectory = '/stockpilot-demo-data';
 const filenames = ['warehouse.sqlite3', 'operations.sqlite3'];
 
 const opened = new Promise((resolve, reject) => {
-  const request = indexedDB.open('stockpilot-complete-demo-20261116', 1);
+  const request = indexedDB.open('stockpilot-complete-demo-20261123', 1);
   request.onupgradeneeded = () => request.result.createObjectStore('snapshots');
   request.onsuccess = () => resolve(request.result);
   request.onerror = () => reject(request.error);
